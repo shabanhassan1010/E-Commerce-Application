@@ -1,4 +1,5 @@
-
+using E_Commerce.InfrastructureLayer.Data.DBContext;
+using Microsoft.EntityFrameworkCore;
 namespace E_Commerce_Application
 {
     public class Program
@@ -8,14 +9,16 @@ namespace E_Commerce_Application
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddSwaggerGen();
 
-            // Add services to the container.
+            #region DbContext Configuration
+            //builder.Services.AddDbContext<ApplicationDBContext>(options =>
+            //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            #endregion
 
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
@@ -25,7 +28,6 @@ namespace E_Commerce_Application
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
