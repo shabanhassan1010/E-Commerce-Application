@@ -10,8 +10,8 @@ namespace E_Commerce_Application
             builder.Services.AddSwaggerGen();
 
             #region DbContext Configuration
-            //builder.Services.AddDbContext<ApplicationDBContext>(options =>
-            //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddDbContext<ApplicationDBContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             #endregion
 
             builder.Services.AddControllers();
