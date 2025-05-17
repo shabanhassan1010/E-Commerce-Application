@@ -1,4 +1,7 @@
+using E_Commerce.DomainLayer.Interfaces;
+using E_Commerce.InfrastructureLayer.Data;
 using E_Commerce.InfrastructureLayer.Data.DBContext;
+using E_Commerce.InfrastructureLayer.Data.DBContext.Repositories;
 using Microsoft.EntityFrameworkCore;
 namespace E_Commerce_Application
 {
@@ -9,10 +12,18 @@ namespace E_Commerce_Application
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddSwaggerGen();
 
+
             #region DbContext Configuration
             builder.Services.AddDbContext<ApplicationDBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             #endregion
+
+            #region Dependency Injection
+            //builder.Services.AddScoped(typeof(IProductRepository), typeof(ProductRepository));
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+            #endregion
+
 
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();

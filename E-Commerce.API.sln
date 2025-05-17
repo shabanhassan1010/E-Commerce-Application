@@ -1,13 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "E-Commerce API", "E-Commerce Application\E-Commerce API.csproj", "{143A08F5-B030-440C-BD8D-7548C2335ED4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "E-Commerce.CoreLayer", "E-Commerce.DomainLayer\E-Commerce.CoreLayer.csproj", "{B48FC1A9-AE9B-4630-9E48-E3538D75C637}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "E-Commerce.ApplicationLayer", "E-Commerce.ApplicationLayer\E-Commerce.ApplicationLayer.csproj", "{A2F4CC1D-B901-43B4-A353-12004CFF7E18}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "E-Commerce.InfrastructureLayer", "E-Commerce.InfrastructureLayer\E-Commerce.InfrastructureLayer.csproj", "{B2D8DC3E-F52D-43E6-8EF6-E39373932900}"
 EndProject
@@ -25,10 +23,6 @@ Global
 		{B48FC1A9-AE9B-4630-9E48-E3538D75C637}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B48FC1A9-AE9B-4630-9E48-E3538D75C637}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B48FC1A9-AE9B-4630-9E48-E3538D75C637}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A2F4CC1D-B901-43B4-A353-12004CFF7E18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2F4CC1D-B901-43B4-A353-12004CFF7E18}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A2F4CC1D-B901-43B4-A353-12004CFF7E18}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A2F4CC1D-B901-43B4-A353-12004CFF7E18}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B2D8DC3E-F52D-43E6-8EF6-E39373932900}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B2D8DC3E-F52D-43E6-8EF6-E39373932900}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2D8DC3E-F52D-43E6-8EF6-E39373932900}.Release|Any CPU.ActiveCfg = Release|Any CPU
