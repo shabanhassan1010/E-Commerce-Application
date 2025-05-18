@@ -45,7 +45,7 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
             return new PaginationResponse<Product>(pageIndex, pageSize, totalItems, data);
         }
 
-        public async Task<IReadOnlyList<Product>> FilterProductByBrand(string brand, string type)
+        public async Task<IReadOnlyList<Product>> FilterProductByBrand(string? brand, string? type , string? sort)
         {
             var query = context.products.AsQueryable();
             if (!string.IsNullOrWhiteSpace(brand))
@@ -54,6 +54,12 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
             if (!string.IsNullOrWhiteSpace(type))
                 query = query.Where(T => T.Type == type);
 
+            query = sort switch
+            {
+                "PriceAse" => query.OrderBy(x => x.Price),
+                "PriceDesc" => query.OrderByDescending(x => x.Price),
+                _ => query.OrderBy(x => x.Name)
+            };
             return await query.ToListAsync();
         }
     }

@@ -29,13 +29,13 @@ namespace E_Commerce_Application.Controllers
             return Ok(await repository.GetAllAsync());
         }
 
-        [HttpGet("FilterProductByBrandOrType")]
-        [EndpointSummary("Filter Product By Brand Or Type")]
+        [HttpGet("FilterProductByBrandOrTypeOrPrice")]
+        [EndpointSummary("Filter Product By Brand Or Type Or Price")]
         [ProducesResponseType(200, Type = typeof(IReadOnlyList<Product>))]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<IReadOnlyList<Product>>> FilterProductByBrandOrType(string? brand , string? type)
+        public async Task<ActionResult<IReadOnlyList<Product>>> FilterProductByBrandOrTypeOrPrice(string? brand , string? type , string? sort)
         {
-            return Ok(await repository.FilterProductByBrand(brand,type));
+            return Ok(await repository.FilterProductByBrand(brand ,type , sort));
         }
         #endregion
 
