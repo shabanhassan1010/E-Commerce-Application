@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace E_Commerce.InfrastructureLayer.Data.DBContext.Repositories
 {
@@ -22,21 +23,23 @@ namespace E_Commerce.InfrastructureLayer.Data.DBContext.Repositories
         {
             return await _dbSet.FindAsync(id);
         }
-        void IRepository<T>.AddAsync(T Entity)
+        async Task IRepository<T>.AddAsync(T entity)
         {
-            _dbSet.Add(Entity);
+            await _dbSet.AddAsync(entity);
         }
-        void IRepository<T>.UpdateAsync(T entity)
+        Task IRepository<T>.UpdateAsync(T entity)
         {
             _dbSet.Update(entity);
+            return Task.CompletedTask;
         }
-        public void DeleteAsync(T entity)
+        public Task DeleteAsync(T entity)
         {
-            _dbSet.Remove(entity);
+           _dbSet.Remove(entity);
+            return Task.CompletedTask;
         }
         public async Task<bool> SaveAsync()
         {
-            return await context.SaveChangesAsync() > 0;      
+            return await context.SaveChangesAsync() > 0;   // return true -> if at least one row was modified on Database    
         }
     }
 }

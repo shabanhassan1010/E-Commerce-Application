@@ -5,9 +5,9 @@ namespace E_Commerce.InfrastructureLayer.Data.DBContext.Repositories
     {
         Task<IEnumerable<T>> GetAllAsync();
         Task<T?> GetByIdAsync(int id);
-        void AddAsync(T Entity);
-        void UpdateAsync(T entity);
-        void DeleteAsync(T entity);
+        Task AddAsync(T entity);
+        Task UpdateAsync(T entity);
+        Task DeleteAsync(T entity);
         Task<bool> SaveAsync();
     }
 }

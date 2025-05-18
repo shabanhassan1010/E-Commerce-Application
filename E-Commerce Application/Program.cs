@@ -1,6 +1,8 @@
+using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer.Data;
 using E_Commerce.InfrastructureLayer.Data.DBContext;
 using E_Commerce.InfrastructureLayer.Data.DBContext.Repositories;
+using E_Commerce.InfrastructureLayer.Data.GenericClass;
 using Microsoft.EntityFrameworkCore;
 namespace E_Commerce_Application
 {
@@ -18,7 +20,7 @@ namespace E_Commerce_Application
             #endregion
 
             #region Dependency Injection
-            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            builder.Services.AddScoped(typeof(IProductRepository) , typeof(ProductRepo));
             #endregion
 
 
