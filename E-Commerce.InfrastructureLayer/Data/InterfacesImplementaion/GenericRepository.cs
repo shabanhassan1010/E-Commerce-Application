@@ -3,12 +3,12 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace E_Commerce.InfrastructureLayer.Data.DBContext.Repositories
 {
-    public class Repository<T> : IRepository<T> where T : class
+    public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         #region DB Context
         private readonly ApplicationDBContext context;
         private readonly DbSet<T> _dbSet;
-        public Repository(ApplicationDBContext context)
+        public GenericRepository(ApplicationDBContext context)
         {
             this.context = context;
             _dbSet = context.Set<T>();
@@ -23,11 +23,11 @@ namespace E_Commerce.InfrastructureLayer.Data.DBContext.Repositories
         {
             return await _dbSet.FindAsync(id);
         }
-        async Task IRepository<T>.AddAsync(T entity)
+        async Task IGenericRepository<T>.AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
         }
-        Task IRepository<T>.UpdateAsync(T entity)
+        Task IGenericRepository<T>.UpdateAsync(T entity)
         {
             _dbSet.Update(entity);
             return Task.CompletedTask;

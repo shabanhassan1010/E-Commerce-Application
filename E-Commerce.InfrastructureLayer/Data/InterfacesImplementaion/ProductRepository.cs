@@ -8,21 +8,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace E_Commerce.InfrastructureLayer.Data.GenericClass
 {
-    public class ProductRepo : Repository<Product> , IProductRepository
+    public class ProductRepository : GenericRepository<Product> , IProductRepository
     {
         private readonly ApplicationDBContext context;
-
-        public ProductRepo(ApplicationDBContext context) 
-            : base(context)
+        public ProductRepository(ApplicationDBContext context) : base(context)
         {
             this.context = context;
         }
+
         public async Task<IReadOnlyList<string>> GetBrandsAsync()
         {
             return await context.products.Select(B => B.Brand)
                     .Distinct().ToListAsync();
         }
-
         public async Task<IReadOnlyList<string>> GetTypesAsync()
         {
             return await context.products.Select(t => t.Type)
@@ -44,7 +42,6 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
 
             return new PaginationResponse<Product>(pageIndex, pageSize, totalItems, data);
         }
-
         public async Task<IReadOnlyList<Product>> FilterProductByBrand(string? brand, string? type , string? sort)
         {
             var query = context.products.AsQueryable();

@@ -1,6 +1,7 @@
 ﻿#region MyRegion
 using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
+using E_Commerce.DomainLayer.IUnitOfWork;
 using E_Commerce.InfrastructureLayer;
 using Microsoft.AspNetCore.Mvc;
 #endregion
@@ -12,10 +13,10 @@ namespace E_Commerce_Application.Controllers
     public class ProductController : ControllerBase
     {
         #region DBContext
-        private readonly IProductRepository repository;
-        public ProductController(IProductRepository repository)
+        private readonly IUnitOfWork unitOfWork;
+        public ProductController(IUnitOfWork unitOfWork)
         {
-            this.repository = repository;
+            this.unitOfWork = unitOfWork;
         }
         #endregion
 
@@ -26,7 +27,7 @@ namespace E_Commerce_Application.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<IEnumerable<Product>>> GetAll()
         {
-            return Ok(await repository.GetAllAsync());
+            return Ok(await unitOfWork.productRepository.GetAllAsync());
         }
 
         [HttpGet("FilterProductByBrandOrTypeOrPrice")]
@@ -35,7 +36,7 @@ namespace E_Commerce_Application.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<IReadOnlyList<Product>>> FilterProductByBrandOrTypeOrPrice(string? brand , string? type , string? sort)
         {
-            return Ok(await repository.FilterProductByBrand(brand ,type , sort));
+            return Ok(await unitOfWork.productRepository.FilterProductByBrand(brand ,type , sort));
         }
         #endregion
 
@@ -50,7 +51,7 @@ namespace E_Commerce_Application.Controllers
             if (page < 1 || pageSize < 1)
                 return BadRequest("Page and pageSize must be greater than 0.");
 
-            var response = await repository.GetProductsPagedAsync(page, pageSize);
+            var response = await unitOfWork.productRepository.GetProductsPagedAsync(page, pageSize);
             return Ok(response);
         }
         #endregion
@@ -62,7 +63,7 @@ namespace E_Commerce_Application.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            var product = await repository.GetByIdAsync(id);
+            var product = await unitOfWork.productRepository.GetByIdAsync(id);
             if (product == null)
                 return NotFound();
             return Ok(product);
@@ -76,8 +77,8 @@ namespace E_Commerce_Application.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<Product>> CreateProduct(Product product)
         {
-            await repository.AddAsync(product);
-            if (await repository.SaveAsync())
+            await unitOfWork.productRepository.AddAsync(product);
+            if (await unitOfWork.productRepository.SaveAsync())
             {
                 return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
             }
@@ -86,7 +87,7 @@ namespace E_Commerce_Application.Controllers
         #endregion
 
         #region Update Product
-        [HttpPost("UpdateProduct/{id:int}")]
+        [HttpPut("UpdateProduct/{id:int}")]
         [EndpointSummary("Update Product")]
         [ProducesResponseType(200, Type = typeof(Product))]
         [ProducesResponseType(400)]
@@ -94,8 +95,8 @@ namespace E_Commerce_Application.Controllers
         {
             if (id != product.Id)
                 return BadRequest("Can not Update this product");
-            await repository.UpdateAsync(product);
-            if (await repository.SaveAsync())  // if the product Already Updated And this update save in DB -> Done
+            await unitOfWork.productRepository.UpdateAsync(product);
+            if (await unitOfWork.productRepository.SaveAsync())  // if the product Already Updated And this update save in DB -> Done
             {
                 return NoContent();
             }
@@ -111,7 +112,7 @@ namespace E_Commerce_Application.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<IReadOnlyList<string>>> GetBrands()
         {
-            return Ok(await repository.GetBrandsAsync());
+            return Ok(await unitOfWork.productRepository.GetBrandsAsync());
         }
         #endregion
 
@@ -122,7 +123,7 @@ namespace E_Commerce_Application.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<IReadOnlyList<string>>> GetTypes()
         {
-            return Ok(await repository.GetTypesAsync());
+            return Ok(await unitOfWork.productRepository.GetTypesAsync());
         }
         #endregion
 
@@ -133,14 +134,14 @@ namespace E_Commerce_Application.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<Product>> DeleteProduct(int id)
         {
-            var Product = await repository.GetByIdAsync(id);
+            var Product = await unitOfWork.productRepository.GetByIdAsync(id);
             if (Product == null)
             {
                 return NotFound();
             }
 
-            await repository.DeleteAsync(Product);
-            if (await repository.SaveAsync())
+            await unitOfWork.productRepository.DeleteAsync(Product);
+            if (await unitOfWork.productRepository.SaveAsync())
             {
                 return NoContent();
             }
