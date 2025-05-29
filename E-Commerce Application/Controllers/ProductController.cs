@@ -1,7 +1,6 @@
 ﻿#region MyRegion
 using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
-using E_Commerce.DomainLayer.IUnitOfWork;
 using E_Commerce.InfrastructureLayer;
 using Microsoft.AspNetCore.Mvc;
 #endregion
