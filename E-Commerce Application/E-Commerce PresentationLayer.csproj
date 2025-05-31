@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\E-Commerce.DomainLayer\E-Commerce.DomainLayer.csproj" />
+    <ProjectReference Include="..\E-Commerce.ApplicationLayer\E-Commerce.ApplicationLayer.csproj" />
     <ProjectReference Include="..\E-Commerce.InfrastructureLayer\E-Commerce.InfrastructureLayer.csproj" />
   </ItemGroup>
 

@@ -9,5 +9,7 @@ namespace E_Commerce.DomainLayer.Interfaces
     public interface IUnitOfWork
     {
         public IProductRepository productRepository { get; set; }
+        Task<bool> SaveAsync();
+
     }
 }

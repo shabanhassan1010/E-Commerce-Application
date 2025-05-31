@@ -3,13 +3,12 @@ using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 #endregion
 
 namespace E_Commerce_Application.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductController : BaseApiController
     {
         #region DBContext
         private readonly IUnitOfWork unitOfWork;
@@ -26,16 +25,18 @@ namespace E_Commerce_Application.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<IEnumerable<Product>>> GetAll()
         {
-            return Ok(await unitOfWork.productRepository.GetAllAsync());
+            var products = await unitOfWork.productRepository.GetAllAsync();
+            return HandleResult(products, "Products retrieved successfully");
         }
 
         [HttpGet("FilterProductByBrandOrTypeOrPrice")]
         [EndpointSummary("Filter Product By Brand Or Type Or Price")]
         [ProducesResponseType(200, Type = typeof(IReadOnlyList<Product>))]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<IReadOnlyList<Product>>> FilterProductByBrandOrTypeOrPrice(string? brand , string? type , string? sort)
+        public async Task<ActionResult<IReadOnlyList<Product>>> FilterProductByBrandOrTypeOrPrice(string? brand, string? type, string? sort)
         {
-            return Ok(await unitOfWork.productRepository.FilterProductByBrand(brand ,type , sort));
+            var products = await unitOfWork.productRepository.FilterProductByBrand(brand, type, sort);
+            return HandleResult(products, "Products filtered successfully");
         }
         #endregion
 
@@ -46,12 +47,11 @@ namespace E_Commerce_Application.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<PaginationResponse<Product>>> GetAllPaged(int page = 1, int pageSize = 10)
         {
-            // Validate input
             if (page < 1 || pageSize < 1)
-                return BadRequest("Page and pageSize must be greater than 0.");
+                return HandleResult(false, "Page and pageSize must be greater than 0");
 
             var response = await unitOfWork.productRepository.GetProductsPagedAsync(page, pageSize);
-            return Ok(response);
+            return HandleResult(response, "Products retrieved successfully");
         }
         #endregion
 
@@ -63,9 +63,7 @@ namespace E_Commerce_Application.Controllers
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
             var product = await unitOfWork.productRepository.GetByIdAsync(id);
-            if (product == null)
-                return NotFound();
-            return Ok(product);
+            return HandleResult(product, "Product retrieved successfully");
         }
         #endregion
 
@@ -77,30 +75,45 @@ namespace E_Commerce_Application.Controllers
         public async Task<ActionResult<Product>> CreateProduct(Product product)
         {
             await unitOfWork.productRepository.AddAsync(product);
-            if (await unitOfWork.productRepository.SaveAsync())
-            {
-                return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
-            }
-            return BadRequest("Can Not Create Product");
+            var success = await unitOfWork.SaveAsync();
+            
+            if (success)
+                return HandleResult(product, HttpStatusCode.Created, "Product created successfully");
+            
+            return HandleResult(false, "Failed to create product");
         }
         #endregion
 
-        #region Update Product
+        #region UpdateProduct
         [HttpPut("UpdateProduct/{id:int}")]
         [EndpointSummary("Update Product")]
         [ProducesResponseType(200, Type = typeof(Product))]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<Product>> UpdateProduct(Product product, int id)
+        public async Task<ActionResult<Product>> UpdateProduct(int id, Product product)
         {
             if (id != product.Id)
-                return BadRequest("Can not Update this product");
-            await unitOfWork.productRepository.UpdateAsync(product);
-            if (await unitOfWork.productRepository.SaveAsync())  // if the product Already Updated And this update save in DB -> Done
-            {
-                return NoContent();
-            }
-            return BadRequest("Problem in Updating In product");
+                return HandleResult(false, "Product ID mismatch");
 
+            var existingProduct = await unitOfWork.productRepository.GetByIdAsync(id);
+            if (existingProduct == null)
+                return HandleResult(false, "Product not found");
+
+            // Update the existing product's properties
+            existingProduct.Name = product.Name;
+            existingProduct.Description = product.Description;
+            existingProduct.Price = product.Price;
+            existingProduct.PictureUrl = product.PictureUrl;
+            existingProduct.Type = product.Type;
+            existingProduct.Brand = product.Brand;
+            existingProduct.QuantityInStock = product.QuantityInStock;
+
+            await unitOfWork.productRepository.UpdateAsync(existingProduct);
+            var success = await unitOfWork.SaveAsync();
+
+            if (success)
+                return HandleResult(existingProduct, "Product updated successfully");
+
+            return HandleResult(false, "Failed to update product");
         }
         #endregion
 
@@ -126,25 +139,24 @@ namespace E_Commerce_Application.Controllers
         }
         #endregion
 
-        #region Delete Product
+        #region DeleteProduct
         [HttpDelete("DeleteProduct/{id:int}")]
         [EndpointSummary("Delete Product")]
-        [ProducesResponseType(200, Type = typeof(Product))]
+        [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<Product>> DeleteProduct(int id)
+        public async Task<ActionResult> DeleteProduct(int id)
         {
-            var Product = await unitOfWork.productRepository.GetByIdAsync(id);
-            if (Product == null)
-            {
-                return NotFound();
-            }
+            var product = await unitOfWork.productRepository.GetByIdAsync(id);
+            if (product == null)
+                return HandleResult(false, "Product not found");
 
-            await unitOfWork.productRepository.DeleteAsync(Product);
-            if (await unitOfWork.productRepository.SaveAsync())
-            {
-                return NoContent();
-            }
-            return BadRequest("Problem in Deleting this product");
+            await unitOfWork.productRepository.DeleteAsync(product);
+            var success = await unitOfWork.SaveAsync();
+
+            if (success)
+                return HandleResult(true, "Product deleted successfully");
+
+            return HandleResult(false, "Failed to delete product");
         }
         #endregion
     }

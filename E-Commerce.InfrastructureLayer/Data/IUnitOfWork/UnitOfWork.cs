@@ -1,13 +1,8 @@
 ﻿using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer.Data.DBContext;
 using E_Commerce.InfrastructureLayer.Data.GenericClass;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace E_Commerce.DomainLayer.IUnitOfWork
+namespace E_Commerce.DomainLayer
 {
     public class UnitOfWork : IUnitOfWork
     {
@@ -26,6 +21,10 @@ namespace E_Commerce.DomainLayer.IUnitOfWork
         public UnitOfWork(ApplicationDBContext context)
         {
             this.context = context;
+        }
+        public async Task<bool> SaveAsync()
+        {
+            return await context.SaveChangesAsync() > 0; // return true -> if at least one row was modified on Database  
         }
     }
 }

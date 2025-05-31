@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Linq.Expressions;
 
 namespace E_Commerce.InfrastructureLayer.Data.DBContext.Repositories
 {
@@ -37,9 +37,9 @@ namespace E_Commerce.InfrastructureLayer.Data.DBContext.Repositories
            _dbSet.Remove(entity);
             return Task.CompletedTask;
         }
-        public async Task<bool> SaveAsync()
+        public IReadOnlySet<T> FindAsync(Expression<Func<T, bool>> query)
         {
-            return await context.SaveChangesAsync() > 0;   // return true -> if at least one row was modified on Database    
+            return _dbSet.Where(query).ToHashSet();
         }
     }
 }
