@@ -10,5 +10,6 @@ namespace E_Commerce.DomainLayer.Interfaces
         Task<IReadOnlyList<string>> GetTypesAsync();
         Task<IReadOnlyList<Product>> FilterProductByBrand(string? brand , string? type , string? sort);
         Task<PaginationResponse<Product>> GetProductsPagedAsync(int pageIndex, int pageSize);
+        Task<IReadOnlyList<Product>> SearchProductsAsync(string? searchTerm);
     }
 }

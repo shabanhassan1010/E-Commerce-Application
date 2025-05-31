@@ -59,5 +59,19 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
             };
             return await query.ToListAsync();
         }
+
+        public async Task<IReadOnlyList<Product>> SearchProductsAsync(string? searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return await context.products.ToListAsync();
+
+            searchTerm = searchTerm.ToLower();
+            return await context.products
+                .Where(p =>
+                    p.Name.ToLower().StartsWith(searchTerm) ||       
+                    p.Description.ToLower().StartsWith(searchTerm) || 
+                    p.Brand.ToLower().StartsWith(searchTerm) ||      
+                    p.Type.ToLower().StartsWith(searchTerm)).OrderBy(p => p.Name).ToListAsync();
+        }
     }
 }

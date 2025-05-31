@@ -159,5 +159,17 @@ namespace E_Commerce_Application.Controllers
             return HandleResult(false, "Failed to delete product");
         }
         #endregion
+
+        #region SearchProducts
+        [HttpGet("Search")]
+        [EndpointSummary("Search Products")]
+        [ProducesResponseType(200, Type = typeof(IReadOnlyList<Product>))]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<IReadOnlyList<Product>>> SearchProducts([FromQuery] string? searchTerm = null)
+        {
+            var products = await unitOfWork.productRepository.SearchProductsAsync(searchTerm);
+            return HandleResult(products, "Products search completed successfully");
+        }
+        #endregion
     }
 }
