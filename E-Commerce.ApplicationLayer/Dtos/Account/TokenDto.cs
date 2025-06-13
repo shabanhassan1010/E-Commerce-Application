@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace E_Commerce.ApplicationLayer
+namespace E_Commerce.ApplicationLayer.Dtos.Account
 {
-    public class Servies
+    public class TokenDto
     {
+        public string Token { get; set; }
     }
 }
