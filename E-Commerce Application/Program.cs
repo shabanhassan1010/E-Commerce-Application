@@ -30,11 +30,11 @@ namespace E_Commerce_Application
             #endregion
 
             #region Redis Cache Configuration
-            //builder.Services.AddStackExchangeRedisCache(options =>
-            //{
-            //    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-            //    options.InstanceName = "ECommerce_";
-            //});
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = builder.Configuration.GetConnectionString("Redis");
+                options.InstanceName = "ECommerce_";
+            });
             #endregion
 
             #region Identity Configuration  -> ( Must be before JWT Authentication)
@@ -95,6 +95,7 @@ namespace E_Commerce_Application
             //        policy.RequireClaim(ClaimTypes.Role, AppRoles.Representative.ToString()));
             //});
             #endregion
+
             #region Dependency Injection
             builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             builder.Services.AddScoped<ICartRepository, CartRepository>();
