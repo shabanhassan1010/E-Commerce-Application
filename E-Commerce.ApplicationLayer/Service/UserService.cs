@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
 
@@ -12,21 +13,33 @@ namespace E_Commerce.ApplicationLayer.Service
 {
     public class UserService : IUserService
     {
-        #region Constructor
+
+        #region  Constructor
         private readonly UserManager<User> _userManager;
-        private readonly IConfiguration _config;
         private readonly SignInManager<User> _signInManager;
-        public UserService(UserManager<User> userManager, IConfiguration config, SignInManager<User> signInManager)
+        private readonly IConfiguration _config;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        public UserService(UserManager<User> userManager, SignInManager<User> signInManager,
+            IConfiguration config,
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
-            _config = config;
             _signInManager = signInManager;
+            _config = config;
+            _roleManager = roleManager;
         }
         #endregion
 
-        // for Admin
         public async Task<IdentityResult> RegisterAsync(RegisterDto dto)
         {
+            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUser != null)
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Code = "DuplicateEmail",
+                    Description = "Email is already registered."
+                });
+
             var user = new User
             {
                 FirstName = dto.FirstName,
@@ -37,13 +50,22 @@ namespace E_Commerce.ApplicationLayer.Service
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
+            if (!result.Succeeded)
+                return result;
 
+            // Ensure "Admin" role exists
+            if (!await _roleManager.RoleExistsAsync(AppRole.Admin.ToString()))
+                await _roleManager.CreateAsync(new IdentityRole(AppRole.Admin.ToString()));
 
+            // Assign role to user
+            await _userManager.AddToRoleAsync(user, AppRole.Admin.ToString());
+
+            // Add claims
             var claimList = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier , user.Id),
-                new Claim(ClaimTypes.Role , "Admin"),
-            };
+              {
+              new Claim(ClaimTypes.NameIdentifier , user.Id),
+              new Claim(ClaimTypes.Role , AppRole.Admin.ToString()),
+              };
             await _userManager.AddClaimsAsync(user, claimList);
 
             return IdentityResult.Success;
@@ -59,18 +81,13 @@ namespace E_Commerce.ApplicationLayer.Service
             if (!result.Succeeded)
                 return null;
 
-            var roles = await _userManager.GetRolesAsync(user);
-
             var claimsList = await _userManager.GetClaimsAsync(user);
 
-            // Read JWT settings from appsettings.json
             var secretKey = _config["JwtSettings:Key"];
-            var algorthim = SecurityAlgorithms.HmacSha256Signature;
+            var algorithm = SecurityAlgorithms.HmacSha256;
 
-            var KeyInBits = Encoding.ASCII.GetBytes(secretKey);
-            var key = new SymmetricSecurityKey(KeyInBits);
-
-            var creds = new SigningCredentials(key, algorthim);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var creds = new SigningCredentials(key, algorithm);
 
             var token = new JwtSecurityToken(
                 claims: claimsList,
@@ -81,6 +98,34 @@ namespace E_Commerce.ApplicationLayer.Service
             );
 
             return new TokenDto { Token = new JwtSecurityTokenHandler().WriteToken(token) };
+        }
+
+        public async Task<bool> ForgotPasswordAsync(ForgotPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+                return false;
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // For testing, return token directly. In production, send via email.
+            Console.WriteLine($"Reset token: {token}");
+
+            // You can use an email service here.
+            return true;
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Code = "UserNotFound",
+                    Description = "No user associated with this email."
+                });
+
+            return await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
         }
     }
 }

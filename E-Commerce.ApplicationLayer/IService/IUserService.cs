@@ -7,5 +7,7 @@ namespace E_Commerce.ApplicationLayer.IService
     {
         Task<IdentityResult> RegisterAsync(RegisterDto dto);
         Task<TokenDto?> LoginAsync(LoginDto dto);
+        Task<bool> ForgotPasswordAsync(ForgotPasswordDto dto);
+        Task<IdentityResult> ResetPasswordAsync(ResetPasswordDto dto);
     }
 }

@@ -1,6 +1,8 @@
 ﻿
 
 using E_Commerce.ApplicationLayer.Dtos.Account;
+using E_Commerce.ApplicationLayer.IService;
+using E_Commerce.ApplicationLayer.Service;
 using E_Commerce.DomainLayer.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,90 +22,82 @@ namespace E_Commerce_Application.Controllers
         /// 
         #region configuration
         private readonly IConfiguration _configuration;
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUserService userService;
 
-        public AccountController(IConfiguration configuration, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+        public AccountController(IConfiguration configuration , IUserService userService)
         {
             _configuration = configuration;
-            _userManager = userManager;
-            _roleManager = roleManager;
+            this.userService = userService;
         }
         #endregion
 
 
-        #region Admin
+        #region Register
         [HttpPost("Register")]
         [EndpointSummary("Register For Admin")]
-        public async Task<ActionResult> Register(RegisterDto registerDto)
+        public async Task<ActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            var user = new User
-            {
-                Email = registerDto.Email,
-                UserName = registerDto.UserName,
-                FirstName = registerDto.FirstName,
-                LastName = registerDto.LastName,
-            };
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var res = await _userManager.CreateAsync(user, registerDto.Password);
-            if (!res.Succeeded)
-                return BadRequest(res.Errors);
+            var result = await userService.RegisterAsync(registerDto);
 
-            await _userManager.AddToRoleAsync(user, "Admin");
+            if (result.Succeeded)
+                return Ok(new { message = "Admin registered successfully." });
 
-            // store Claims
-            var claimList = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier , user.Id),
-                new Claim(ClaimTypes.Role , "Admin"),
-            };
-            await _userManager.AddClaimsAsync(user, claimList);
-            return NoContent();
-        }
-
-
-        [HttpPost("login")]
-        [EndpointSummary("login For Admin")]
-        public async Task<ActionResult<TokenDto>> Login(LoginDto loginDto)
-        {
-
-            User? user = await _userManager.FindByEmailAsync(loginDto.Email);
-            if (user == null)
-                return Unauthorized("Invalid credentials");
-
-            bool isCorrect = await _userManager.CheckPasswordAsync(user, loginDto.Password);
-            if (!isCorrect)
-                return Unauthorized("Invalid credentials");
-
-
-            // JWT claims
-            var claimsList = await _userManager.GetClaimsAsync(user);
-
-            // Read JWT settings from appsettings.json
-            var secretKey = _configuration["JwtSettings:Key"];
-            var algorthim = SecurityAlgorithms.HmacSha256Signature;
-
-            var KeyInBits = Encoding.ASCII.GetBytes(secretKey);
-            var key = new SymmetricSecurityKey(KeyInBits);
-
-            var creds = new SigningCredentials(key, algorthim);
-
-            var token = new JwtSecurityToken(
-                claims: claimsList,
-                signingCredentials: creds,
-                issuer: _configuration["JwtSettings:Issuer"],
-                audience: _configuration["JwtSettings:Audience"],
-                expires: DateTime.Now.AddMinutes(10)
-            );
-
-            // now i will convert this token from obj into string
-            var tokenDto = new TokenDto
-            {
-                Token = new JwtSecurityTokenHandler().WriteToken(token)
-            };
-
-            return Ok(tokenDto);
+            return BadRequest(result.Errors);
         }
         #endregion
+
+
+        #region Login
+        [HttpPost("Login")]
+        [EndpointSummary("Login For Admin")]
+        public async Task<ActionResult<TokenDto>> Login([FromBody] LoginDto loginDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var token = await userService.LoginAsync(loginDto);
+
+            if (token == null)
+                return Unauthorized(new { message = "Invalid credentials." });
+
+            return Ok(token);
+        }
+        #endregion
+
+
+        #region ForgotPassword
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await userService.ForgotPasswordAsync(dto);
+            if (!result)
+                return NotFound(new { message = "Email not found." });
+
+            return Ok(new { message = "Password reset token sent to your email (check console in development)." });
+        }
+        #endregion
+
+
+        #region ResetPassword
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await userService.ResetPasswordAsync(dto);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok(new { message = "Password has been reset successfully." });
+        }
+        #endregion
+
     }
 }

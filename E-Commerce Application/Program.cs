@@ -1,4 +1,6 @@
+using E_Commerce.ApplicationLayer.IService;
 using E_Commerce.ApplicationLayer.MiddleWares;
+using E_Commerce.ApplicationLayer.Service;
 using E_Commerce.DomainLayer;
 using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
@@ -99,9 +101,10 @@ namespace E_Commerce_Application
             #region Dependency Injection
             builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             builder.Services.AddScoped<ICartRepository, CartRepository>();
+            builder.Services.AddScoped<IUserService, UserService>();
             #endregion
 
-            builder.Services.AddCors();
+            //builder.Services.AddCors();
 
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
@@ -109,9 +112,9 @@ namespace E_Commerce_Application
             var app = builder.Build();
 
             // Add Exception Middleware
-            app.UseMiddleware<ExceptionMiddleware>();
-            app.UseMiddleware<ProfindingMiddleware>();
-            app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200"));
+            //app.UseMiddleware<ExceptionMiddleware>();
+            //app.UseMiddleware<ProfindingMiddleware>();
+            //app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200"));
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();

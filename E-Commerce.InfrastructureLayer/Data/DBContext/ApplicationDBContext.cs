@@ -1,9 +1,11 @@
 ﻿using E_Commerce.DomainLayer.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace E_Commerce.InfrastructureLayer.Data.DBContext
 {
-    public class ApplicationDBContext : DbContext
+    public class ApplicationDBContext : IdentityDbContext<User>
     {
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext> context):base (context)
         {
@@ -12,7 +14,6 @@ namespace E_Commerce.InfrastructureLayer.Data.DBContext
         public DbSet<Product> products { get; set; }
         public DbSet<ShoppingCart> shoppingCarts { get; set; }
         public DbSet<CartItem> cartItems { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
