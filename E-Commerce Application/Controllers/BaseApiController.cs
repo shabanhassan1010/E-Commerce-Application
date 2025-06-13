@@ -1,4 +1,4 @@
-﻿using E_Commerce.DomainLayer.ApiResponse;
+﻿using E_Commerce.ApplicationLayer.ApiResponse;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;

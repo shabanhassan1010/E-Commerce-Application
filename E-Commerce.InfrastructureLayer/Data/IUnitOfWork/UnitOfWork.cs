@@ -1,6 +1,8 @@
 ﻿using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer.Data.DBContext;
 using E_Commerce.InfrastructureLayer.Data.GenericClass;
+using E_Commerce.InfrastructureLayer.Data.InterfacesImplementaion;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace E_Commerce.DomainLayer
 {
@@ -8,6 +10,8 @@ namespace E_Commerce.DomainLayer
     {
         private readonly ApplicationDBContext context;
         private IProductRepository _productRepository;
+        private ICartRepository _cartRepository;
+
         public IProductRepository productRepository 
         {
             get
@@ -18,10 +22,23 @@ namespace E_Commerce.DomainLayer
             }
             set => _productRepository = value;
         }
+
+        public ICartRepository cartRepository
+        {
+            get
+            {
+                if (_cartRepository == null)
+                    _cartRepository = new CartRepository(context, context.GetService<Microsoft.Extensions.Caching.Distributed.IDistributedCache>());
+                return _cartRepository;
+            }
+            set => _cartRepository = value;
+        }
+
         public UnitOfWork(ApplicationDBContext context)
         {
             this.context = context;
         }
+
         public async Task<bool> SaveAsync()
         {
             return await context.SaveChangesAsync() > 0; // return true -> if at least one row was modified on Database  

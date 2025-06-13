@@ -59,7 +59,6 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
             };
             return await query.ToListAsync();
         }
-
         public async Task<IReadOnlyList<Product>> SearchProductsAsync(string? searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
