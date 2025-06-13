@@ -45,6 +45,7 @@ namespace E_Commerce_Application
 
             // Add Exception Middleware
             app.UseMiddleware<ExceptionMiddleware>();
+            app.UseMiddleware<ProfindingMiddleware>();
             app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200"));
             if (app.Environment.IsDevelopment())
             {
