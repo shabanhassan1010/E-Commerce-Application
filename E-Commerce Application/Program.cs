@@ -1,3 +1,4 @@
+#region
 using E_Commerce.ApplicationLayer.IService;
 using E_Commerce.ApplicationLayer.MiddleWares;
 using E_Commerce.ApplicationLayer.Service;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
+#endregion
 
 namespace E_Commerce_Application
 {
@@ -82,21 +84,13 @@ namespace E_Commerce_Application
 
 
             #region Authorization Policies
-            //builder.Services.AddAuthorization(options =>
-            //{
-            //    options.AddPolicy("AdminPolicy", policy =>
-            //        policy.RequireClaim(ClaimTypes.Role, AppRoles.Admin.ToString()));
-
-            //    options.AddPolicy("PharmacyPolicy", policy =>
-            //        policy.RequireClaim(ClaimTypes.Role, AppRoles.Pharmacy.ToString()));
-
-            //    options.AddPolicy("WareHousePolicy", policy =>
-            //        policy.RequireClaim(ClaimTypes.Role, AppRoles.WareHouseManager.ToString()));
-
-            //    options.AddPolicy("RepresentativePolicy", policy =>
-            //        policy.RequireClaim(ClaimTypes.Role, AppRoles.Representative.ToString()));
-            //});
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminPolicy", policy =>
+                    policy.RequireClaim(ClaimTypes.Role, AppRole.Admin.ToString()));
+            });
             #endregion
+
 
             #region Dependency Injection
             builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
@@ -122,6 +116,8 @@ namespace E_Commerce_Application
             }
 
             app.UseHttpsRedirection();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

@@ -49,7 +49,6 @@ namespace E_Commerce_Application.Controllers
         }
         #endregion
 
-
         #region Login
         [HttpPost("Login")]
         [EndpointSummary("Login For Admin")]
@@ -67,7 +66,6 @@ namespace E_Commerce_Application.Controllers
         }
         #endregion
 
-
         #region ForgotPassword
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
@@ -82,7 +80,6 @@ namespace E_Commerce_Application.Controllers
             return Ok(new { message = "Password reset token sent to your email (check console in development)." });
         }
         #endregion
-
 
         #region ResetPassword
         [HttpPost("reset-password")]
