@@ -88,6 +88,8 @@ namespace E_Commerce_Application
             {
                 options.AddPolicy("AdminPolicy", policy =>
                     policy.RequireClaim(ClaimTypes.Role, AppRole.Admin.ToString()));
+                options.AddPolicy("CustomerPolicy", policy =>
+                    policy.RequireClaim(ClaimTypes.Role, AppRole.customer.ToString()));
             });
             #endregion
 

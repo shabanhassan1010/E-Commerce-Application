@@ -8,7 +8,9 @@ using System.Net;
 
 namespace E_Commerce_Application.Controllers
 {
-    public class ProductController : BaseApiController
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ProductController : ControllerBase
     {
         #region DBContext
         private readonly IUnitOfWork unitOfWork;
@@ -20,23 +22,32 @@ namespace E_Commerce_Application.Controllers
 
         #region GetAll
         [HttpGet("GetAll")]
-        [EndpointSummary("Get All")]
+        [EndpointSummary("Get All Products")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Product>))]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public async Task<ActionResult<IEnumerable<Product>>> GetAll()
         {
             var products = await unitOfWork.productRepository.GetAllAsync();
-            return HandleResult(products, "Products retrieved successfully");
+            if (products == null || !products.Any())
+                return NotFound("No products found");
+
+            return Ok(products);
         }
 
         [HttpGet("FilterProductByBrandOrTypeOrPrice")]
         [EndpointSummary("Filter Product By Brand Or Type Or Price")]
         [ProducesResponseType(200, Type = typeof(IReadOnlyList<Product>))]
-        [ProducesResponseType(400)]
-        public async Task<ActionResult<IReadOnlyList<Product>>> FilterProductByBrandOrTypeOrPrice(string? brand, string? type, string? sort)
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<IReadOnlyList<Product>>> FilterProductByBrandOrTypeOrPrice(
+            [FromQuery] string? brand, 
+            [FromQuery] string? type, 
+            [FromQuery] string? sort)
         {
             var products = await unitOfWork.productRepository.FilterProductByBrand(brand, type, sort);
-            return HandleResult(products, "Products filtered successfully");
+            if (products == null || !products.Any())
+                return NotFound("No products found matching the criteria");
+
+            return Ok(products);
         }
         #endregion
 
@@ -45,58 +56,80 @@ namespace E_Commerce_Application.Controllers
         [EndpointSummary("Get All Product Paginated")]
         [ProducesResponseType(200, Type = typeof(PaginationResponse<Product>))]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<PaginationResponse<Product>>> GetAllPaged(int page = 1, int pageSize = 10)
+        public async Task<ActionResult<PaginationResponse<Product>>> GetAllPaginated(
+            [FromQuery] int page = 1, 
+            [FromQuery] int pageSize = 10)
         {
             if (page < 1 || pageSize < 1)
-                return HandleResult(false, "Page and pageSize must be greater than 0");
+                return BadRequest("Page and pageSize must be greater than 0");
 
             var response = await unitOfWork.productRepository.GetProductsPagedAsync(page, pageSize);
-            return HandleResult(response, "Products retrieved successfully");
+            if (response == null)
+                return NotFound("No products found");
+
+            return Ok(response);
         }
         #endregion
 
         #region GetProduct
         [HttpGet("GetProduct/{id:int}")]
-        [EndpointSummary("Get Product")]
+        [EndpointSummary("Get Product by ID")]
         [ProducesResponseType(200, Type = typeof(Product))]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
             var product = await unitOfWork.productRepository.GetByIdAsync(id);
-            return HandleResult(product, "Product retrieved successfully");
+            if (product == null)
+                return NotFound($"Product with ID {id} not found");
+
+            return Ok(product);
         }
         #endregion
 
         #region CreateProduct
         [HttpPost("CreateProduct")]
-        [EndpointSummary("Create Product")]
-        [ProducesResponseType(200, Type = typeof(Product))]
+        [EndpointSummary("Create New Product")]
+        [ProducesResponseType(201, Type = typeof(Product))]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<Product>> CreateProduct(Product product)
+        public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return BadRequest(errors);
+            }
+
             await unitOfWork.productRepository.AddAsync(product);
             var success = await unitOfWork.SaveAsync();
             
             if (success)
-                return HandleResult(product, HttpStatusCode.Created, "Product created successfully");
-            
-            return HandleResult(false, "Failed to create product");
+                return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+
+            return BadRequest("Failed to create product");
         }
         #endregion
 
         #region UpdateProduct
         [HttpPut("UpdateProduct/{id:int}")]
-        [EndpointSummary("Update Product")]
+        [EndpointSummary("Update Existing Product")]
         [ProducesResponseType(200, Type = typeof(Product))]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<Product>> UpdateProduct(int id, Product product)
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<Product>> UpdateProduct(int id, [FromBody] Product product)
         {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
             if (id != product.Id)
-                return HandleResult(false, "Product ID mismatch");
+                return BadRequest("Product ID mismatch");
 
             var existingProduct = await unitOfWork.productRepository.GetByIdAsync(id);
             if (existingProduct == null)
-                return HandleResult(false, "Product not found");
+                return NotFound($"Product with ID {id} not found");
 
             // Update the existing product's properties
             existingProduct.Name = product.Name;
@@ -111,31 +144,39 @@ namespace E_Commerce_Application.Controllers
             var success = await unitOfWork.SaveAsync();
 
             if (success)
-                return HandleResult(existingProduct, "Product updated successfully");
+                return Ok(existingProduct);
 
-            return HandleResult(false, "Failed to update product");
+            return BadRequest("Failed to update product");
         }
         #endregion
 
         #region Get Product Brands
         [HttpGet("GetBrands")]
-        [EndpointSummary("Get Product Brands")]
-        [ProducesResponseType(200, Type = typeof(string))]
-        [ProducesResponseType(400)]
+        [EndpointSummary("Get All Product Brands")]
+        [ProducesResponseType(200, Type = typeof(IReadOnlyList<string>))]
+        [ProducesResponseType(404)]
         public async Task<ActionResult<IReadOnlyList<string>>> GetBrands()
         {
-            return Ok(await unitOfWork.productRepository.GetBrandsAsync());
+            var brands = await unitOfWork.productRepository.GetBrandsAsync();
+            if (brands == null || !brands.Any())
+                return NotFound("No brands found");
+
+            return Ok(brands);
         }
         #endregion
 
         #region Get Product Types
         [HttpGet("GetTypes")]
-        [EndpointSummary("Get Product Types")]
-        [ProducesResponseType(200, Type = typeof(string))]
-        [ProducesResponseType(400)]
+        [EndpointSummary("Get All Product Types")]
+        [ProducesResponseType(200, Type = typeof(IReadOnlyList<string>))]
+        [ProducesResponseType(404)]
         public async Task<ActionResult<IReadOnlyList<string>>> GetTypes()
         {
-            return Ok(await unitOfWork.productRepository.GetTypesAsync());
+            var types = await unitOfWork.productRepository.GetTypesAsync();
+            if (types == null || !types.Any())
+                return NotFound("No types found");
+
+            return Ok(types);
         }
         #endregion
 
@@ -143,20 +184,20 @@ namespace E_Commerce_Application.Controllers
         [HttpDelete("DeleteProduct/{id:int}")]
         [EndpointSummary("Delete Product")]
         [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
-        public async Task<ActionResult> DeleteProduct(int id)
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> DeleteProduct(int id)
         {
             var product = await unitOfWork.productRepository.GetByIdAsync(id);
             if (product == null)
-                return HandleResult(false, "Product not found");
+                return NotFound($"Product with ID {id} not found");
 
             await unitOfWork.productRepository.DeleteAsync(product);
             var success = await unitOfWork.SaveAsync();
 
             if (success)
-                return HandleResult(true, "Product deleted successfully");
+                return Ok();
 
-            return HandleResult(false, "Failed to delete product");
+            return BadRequest("Failed to delete product");
         }
         #endregion
 
@@ -164,11 +205,14 @@ namespace E_Commerce_Application.Controllers
         [HttpGet("Search")]
         [EndpointSummary("Search Products")]
         [ProducesResponseType(200, Type = typeof(IReadOnlyList<Product>))]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public async Task<ActionResult<IReadOnlyList<Product>>> SearchProducts([FromQuery] string? searchTerm = null)
         {
             var products = await unitOfWork.productRepository.SearchProductsAsync(searchTerm);
-            return HandleResult(products, "Products search completed successfully");
+            if (products == null || !products.Any())
+                return NotFound("No products found matching the search criteria");
+
+            return Ok(products);
         }
         #endregion
     }

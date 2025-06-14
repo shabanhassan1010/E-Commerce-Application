@@ -1,5 +1,7 @@
-﻿using E_Commerce.DomainLayer.Entities;
+﻿using E_Commerce.ApplicationLayer.ApiResponse;
+using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce_Application.Controllers
@@ -16,12 +18,14 @@ namespace E_Commerce_Application.Controllers
 
         [HttpGet("GetAll")]
         [EndpointSummary("Get All Cart")]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<CartItem>))]
+        [ProducesResponseType(200, Type = typeof(ApiResponse<IEnumerable<CartItem>>))]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<IEnumerable<CartItem>>> GetAll()
+        [Authorize]
+        [Authorize(Policy = "CustomerPolicy")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<CartItem>>>> GetAll()
         {
             var CartItems = await unitOfWork.cartRepository.GetAllAsync();
-            return HandleResult(CartItems, "CartItems retrieved successfully");
+            return Ok("CartItems retrieved successfully");
         }
     }
 }
