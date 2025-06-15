@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="14.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.6" />
@@ -20,6 +21,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\E-Commerce.DomainLayer\E-Commerce.DomainLayer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ApiResponse\" />
   </ItemGroup>
 
 </Project>

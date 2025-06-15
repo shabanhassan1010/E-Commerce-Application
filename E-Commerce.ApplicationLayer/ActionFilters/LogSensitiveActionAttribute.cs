@@ -8,7 +8,7 @@ namespace E_Commerce.ApplicationLayer.ActionFilters
     {
         public override void OnActionExecuted(ActionExecutedContext context)
         {
-            Debug.WriteLine("Sensitive Data");
+            Console.WriteLine("Sensitive Data");
         }
     }
 }

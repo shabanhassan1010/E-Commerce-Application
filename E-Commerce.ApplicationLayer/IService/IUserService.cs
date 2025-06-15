@@ -1,4 +1,6 @@
-﻿using E_Commerce.ApplicationLayer.Dtos.Account;
+﻿using E_Commerce.ApplicationLayer.Dtos.Account.ForgetPassword;
+using E_Commerce.ApplicationLayer.Dtos.Account.Login;
+using E_Commerce.ApplicationLayer.Dtos.Account.Rigster;
 using Microsoft.AspNetCore.Identity;
 
 namespace E_Commerce.ApplicationLayer.IService

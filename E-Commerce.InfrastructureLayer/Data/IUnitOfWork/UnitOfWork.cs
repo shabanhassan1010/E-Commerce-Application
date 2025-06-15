@@ -28,7 +28,7 @@ namespace E_Commerce.DomainLayer
             get
             {
                 if (_cartRepository == null)
-                    _cartRepository = new CartRepository(context, context.GetService<Microsoft.Extensions.Caching.Distributed.IDistributedCache>());
+                    _cartRepository = new CartRepository(context);
                 return _cartRepository;
             }
             set => _cartRepository = value;

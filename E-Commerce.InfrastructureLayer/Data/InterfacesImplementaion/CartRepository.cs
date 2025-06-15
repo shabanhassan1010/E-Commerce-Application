@@ -2,6 +2,7 @@
 using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer.Data.DBContext;
 using E_Commerce.InfrastructureLayer.Data.DBContext.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 
@@ -10,49 +11,33 @@ namespace E_Commerce.InfrastructureLayer.Data.InterfacesImplementaion
     public class CartRepository : GenericRepository<CartItem>, ICartRepository
     {
         private readonly ApplicationDBContext context;
-        private readonly IDistributedCache _cache;
-        private const string CART_PREFIX = "Cart_";
-
-        public CartRepository(ApplicationDBContext context, IDistributedCache cache) : base(context)
+        public CartRepository(ApplicationDBContext context) : base(context)
         {
             this.context = context;
-            _cache = cache;
+        }
+        public async Task<ShoppingCart> GetCartByUserIdAsync(string userId)
+        {
+            return await context.shoppingCarts
+                .FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
-        public async Task<bool> DeleteCartAysnc(string key)
+        public async Task<ShoppingCart> GetCartWithItemsAsync(string userId)
         {
-            try
-            {
-                await _cache.RemoveAsync(CART_PREFIX + key);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return await context.shoppingCarts
+                .Include(c => c.CartItems)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+        }
+        public async Task<CartItem> GetCartItemAsync(int productId, string shoppingCartId)
+        {
+            return await context.cartItems
+                .FirstOrDefaultAsync(ci => ci.ProductId == productId && ci.ShoppingCartId == shoppingCartId);
         }
 
-        public async Task<ShoppingCart?> GetCartAysnc(string key)
+        public async Task<IEnumerable<CartItem>> GetCartItemsAsync(string shoppingCartId)
         {
-            var cartData = await _cache.GetStringAsync(CART_PREFIX + key);
-            if (string.IsNullOrEmpty(cartData))
-                return null;
-
-            return JsonSerializer.Deserialize<ShoppingCart>(cartData);
-        }
-
-        public async Task<ShoppingCart?> SetCartAysnc(ShoppingCart shoppingCart)
-        {
-            try
-            {
-                var cartData = JsonSerializer.Serialize(shoppingCart);
-                await _cache.SetStringAsync(CART_PREFIX + shoppingCart.Id, cartData);
-                return shoppingCart;
-            }
-            catch
-            {
-                return null;
-            }
+            return await context.cartItems
+                .Where(ci => ci.ShoppingCartId == shoppingCartId)
+                .ToListAsync();
         }
     }
 }

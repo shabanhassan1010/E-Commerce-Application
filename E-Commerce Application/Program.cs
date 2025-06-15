@@ -1,4 +1,5 @@
 #region
+using E_Commerce.ApplicationLayer.ActionFilters;
 using E_Commerce.ApplicationLayer.IService;
 using E_Commerce.ApplicationLayer.MiddleWares;
 using E_Commerce.ApplicationLayer.Service;
@@ -33,6 +34,7 @@ namespace E_Commerce_Application
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             #endregion
 
+
             #region Redis Cache Configuration
             builder.Services.AddStackExchangeRedisCache(options =>
             {
@@ -40,6 +42,7 @@ namespace E_Commerce_Application
                 options.InstanceName = "ECommerce_";
             });
             #endregion
+
 
             #region Identity Configuration  -> ( Must be before JWT Authentication)
             builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -100,6 +103,14 @@ namespace E_Commerce_Application
             builder.Services.AddScoped<IUserService, UserService>();
             #endregion
 
+
+            #region Action Filters Registration
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add<LogSensitiveActionAttribute>(); // Register global filter
+            });
+            #endregion
+
             //builder.Services.AddCors();
 
             builder.Services.AddControllers();
@@ -107,10 +118,10 @@ namespace E_Commerce_Application
 
             var app = builder.Build();
 
-            // Add Exception Middleware
-            //app.UseMiddleware<ExceptionMiddleware>();
-            //app.UseMiddleware<ProfindingMiddleware>();
-            //app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200"));
+            #region Middleware Pipeline Configuration
+            // Exception handling should be first in the pipeline
+            app.UseMiddleware<ExceptionMiddleware>();
+
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
@@ -126,6 +137,7 @@ namespace E_Commerce_Application
             app.MapControllers();
 
             app.Run();
+            #endregion
         }
     }
 }

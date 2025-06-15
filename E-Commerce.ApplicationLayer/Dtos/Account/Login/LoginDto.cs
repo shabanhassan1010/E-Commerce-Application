@@ -1,5 +1,4 @@
-﻿
-namespace E_Commerce.ApplicationLayer.Dtos.Account
+﻿namespace E_Commerce.ApplicationLayer.Dtos.Account.Login
 {
     public class LoginDto
     {

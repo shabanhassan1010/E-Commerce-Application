@@ -1,12 +1,15 @@
 ﻿using E_Commerce.DomainLayer.Entities;
 using E_Commerce.InfrastructureLayer.Data.DBContext.Repositories;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace E_Commerce.DomainLayer.Interfaces
 {
-    public interface ICartRepository : IGenericRepository<CartItem>
+    public interface ICartItemRepository : IGenericRepository<CartItem>
     {
-        Task<ShoppingCart> GetCartByUserIdAsync(string userId);
-        Task<ShoppingCart> GetCartWithItemsAsync(string userId);
         Task<CartItem> GetCartItemAsync(int productId, string shoppingCartId);
         Task<IEnumerable<CartItem>> GetCartItemsAsync(string shoppingCartId);
     }

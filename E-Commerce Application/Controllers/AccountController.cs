@@ -1,15 +1,9 @@
-﻿
-
-using E_Commerce.ApplicationLayer.Dtos.Account;
+﻿using E_Commerce.ApplicationLayer.Dtos.Account.ForgetPassword;
+using E_Commerce.ApplicationLayer.Dtos.Account.Login;
+using E_Commerce.ApplicationLayer.Dtos.Account.Rigster;
 using E_Commerce.ApplicationLayer.IService;
-using E_Commerce.ApplicationLayer.Service;
-using E_Commerce.DomainLayer.Entities;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+
 
 namespace E_Commerce_Application.Controllers
 {

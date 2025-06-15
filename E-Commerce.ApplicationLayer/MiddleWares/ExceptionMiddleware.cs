@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using System.Net;
 using System.Text.Json;
-using E_Commerce.ApplicationLayer.ApiResponse;
 
 namespace E_Commerce.ApplicationLayer.MiddleWares
 {
@@ -37,9 +36,9 @@ namespace E_Commerce.ApplicationLayer.MiddleWares
         {
             context.Response.ContentType = "application/json"; // set the content type to json
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError; // set the status code to 500
-            var response = _hostEnvironment.IsDevelopment()  // if i am in development mode will Includes the error message and stack trace
-                ? new ApiErrorResponse(context.Response.StatusCode, ex.Message, ex.StackTrace?.ToString())
-                : new ApiErrorResponse(context.Response.StatusCode, "Internal Server Error");
+            var response = _hostEnvironment.IsDevelopment();  // if i am in development mode will Includes the error message and stack trace
+                //? new ApiErrorResponse(context.Response.StatusCode, ex.Message, ex.StackTrace?.ToString())
+                //: new ApiErrorResponse(context.Response.StatusCode, "Internal Server Error");
 
             await context.Response.WriteAsync(JsonSerializer.Serialize(response));  // Serializes the response to JSON and sends it back to the client
         }

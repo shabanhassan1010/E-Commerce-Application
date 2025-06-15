@@ -18,24 +18,31 @@ namespace E_Commerce.InfrastructureLayer.Data.DBContext
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<ShoppingCart>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).IsRequired();
-                entity.HasMany(e => e.cartItems)
-                      .WithOne()
-                      .HasForeignKey("ShoppingCartId")
-                      .OnDelete(DeleteBehavior.Cascade);
-            });
+            // ShoppingCart to User
+            modelBuilder.Entity<ShoppingCart>()
+                .HasOne(sc => sc.User)
+                .WithMany()
+                .HasForeignKey(sc => sc.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<CartItem>(entity =>
-            {
-                entity.HasKey(e => new { e.ProductId, e.ShoppingCartId });
-                entity.Property(e => e.ProductName).IsRequired();
-                entity.Property(e => e.Price).HasPrecision(18, 2);
-                entity.Property(e => e.Quantity).IsRequired();
-                entity.Property(e => e.PictureUrl).IsRequired();
-            });
+            // ShoppingCart to CartItems
+            modelBuilder.Entity<ShoppingCart>()
+                .HasMany(sc => sc.CartItems)
+                .WithOne(ci => ci.ShoppingCart)
+                .HasForeignKey(ci => ci.ShoppingCartId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CartItem to Product
+            modelBuilder.Entity<CartItem>()
+                .HasOne(ci => ci.Product)
+                .WithMany()
+                .HasForeignKey(ci => ci.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure decimal precision
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal(18,2)");
         }
     }
 }

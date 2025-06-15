@@ -1,4 +1,6 @@
-﻿using E_Commerce.ApplicationLayer.Dtos.Account;
+﻿using E_Commerce.ApplicationLayer.Dtos.Account.ForgetPassword;
+using E_Commerce.ApplicationLayer.Dtos.Account.Login;
+using E_Commerce.ApplicationLayer.Dtos.Account.Rigster;
 using E_Commerce.ApplicationLayer.IService;
 using E_Commerce.DomainLayer.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -32,43 +34,79 @@ namespace E_Commerce.ApplicationLayer.Service
 
         public async Task<IdentityResult> RegisterAsync(RegisterDto dto)
         {
+            // Validate email uniqueness
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
+            {
                 return IdentityResult.Failed(new IdentityError
                 {
                     Code = "DuplicateEmail",
                     Description = "Email is already registered."
                 });
+            }
 
+            // Create new user
             var user = new User
             {
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
                 UserName = dto.Email,
-                PhoneNumber = dto.PhoneNumber,
+                PhoneNumber = dto.PhoneNumber
             };
 
+            // Create user account
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
                 return result;
 
-            // Ensure "Admin" role exists
+            // Ensure roles exist
+            await EnsureRolesExist();
+
+            // Assign role to user
+            var roleResult = await AssignUserRole(user, dto.Role);
+            if (!roleResult.Succeeded)
+                return roleResult;
+
+            // Add claims
+            var claimResult = await AddUserClaims(user);
+            return claimResult;
+        }
+
+        private async Task EnsureRolesExist()
+        {
             if (!await _roleManager.RoleExistsAsync(AppRole.Admin.ToString()))
                 await _roleManager.CreateAsync(new IdentityRole(AppRole.Admin.ToString()));
 
-            // Assign role to user
-            await _userManager.AddToRoleAsync(user, AppRole.Admin.ToString());
+            if (!await _roleManager.RoleExistsAsync(AppRole.customer.ToString()))
+                await _roleManager.CreateAsync(new IdentityRole(AppRole.customer.ToString()));
+        }
 
-            // Add claims
-            var claimList = new List<Claim>
-              {
-              new Claim(ClaimTypes.NameIdentifier , user.Id),
-              new Claim(ClaimTypes.Role , AppRole.Admin.ToString()),
-              };
-            await _userManager.AddClaimsAsync(user, claimList);
+        private async Task<IdentityResult> AssignUserRole(User user, string role)
+        {
+            // Validate requested role
+            if (role != "Admin" && role != "customer")
+            {
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Code = "InvalidRole",
+                    Description = "Invalid role specified"
+                });
+            }
 
-            return IdentityResult.Success;
+            // Assign role
+            return await _userManager.AddToRoleAsync(user, role.ToString());
+        }
+
+        private async Task<IdentityResult> AddUserClaims(User user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
+
+            return await _userManager.AddClaimsAsync(user, claims);
         }
 
         public async Task<TokenDto?> LoginAsync(LoginDto dto)

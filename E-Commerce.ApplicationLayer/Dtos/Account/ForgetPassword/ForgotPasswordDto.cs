@@ -1,7 +1,6 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace E_Commerce.ApplicationLayer.Dtos.Account
+namespace E_Commerce.ApplicationLayer.Dtos.Account.ForgetPassword
 {
     public class ForgotPasswordDto
     {

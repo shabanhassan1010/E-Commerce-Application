@@ -10,8 +10,8 @@ namespace E_Commerce.DomainLayer.Entities
 {
     public class BaseEntity
     {
-        //[Key]
-        //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
     }
 }
