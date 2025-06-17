@@ -17,25 +17,24 @@ namespace E_Commerce.InfrastructureLayer.Data.InterfacesImplementaion
         }
         public async Task<ShoppingCart> GetCartByUserIdAsync(string userId)
         {
-            return await context.shoppingCarts
-                .FirstOrDefaultAsync(c => c.UserId == userId);
+            return await context.shoppingCarts.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
         public async Task<ShoppingCart> GetCartWithItemsAsync(string userId)
         {
-            return await context.shoppingCarts
-                .Include(c => c.CartItems)
+            return await context.shoppingCarts.AsNoTracking().Include(c => c.CartItems)
                 .FirstOrDefaultAsync(c => c.UserId == userId);
         }
+
         public async Task<CartItem> GetCartItemAsync(int productId, string shoppingCartId)
         {
-            return await context.cartItems
+            return await context.cartItems.AsNoTracking()
                 .FirstOrDefaultAsync(ci => ci.ProductId == productId && ci.ShoppingCartId == shoppingCartId);
         }
 
         public async Task<IEnumerable<CartItem>> GetCartItemsAsync(string shoppingCartId)
         {
-            return await context.cartItems
+            return await context.cartItems.AsNoTracking()
                 .Where(ci => ci.ShoppingCartId == shoppingCartId)
                 .ToListAsync();
         }

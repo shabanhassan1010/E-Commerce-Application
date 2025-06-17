@@ -1,4 +1,5 @@
-﻿using E_Commerce.ApplicationLayer.Dtos.Account.ForgetPassword;
+﻿#region MyRegion
+using E_Commerce.ApplicationLayer.Dtos.Account.ForgetPassword;
 using E_Commerce.ApplicationLayer.Dtos.Account.Login;
 using E_Commerce.ApplicationLayer.Dtos.Account.Rigster;
 using E_Commerce.ApplicationLayer.IService;
@@ -10,6 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
+#endregion
 
 namespace E_Commerce.ApplicationLayer.Service
 {
@@ -57,7 +59,7 @@ namespace E_Commerce.ApplicationLayer.Service
 
             // Create user account
             var result = await _userManager.CreateAsync(user, dto.Password);
-            if (!result.Succeeded)
+            if (!result.Succeeded)  // if my data match validation
                 return result;
 
             // Ensure roles exist
@@ -80,7 +82,7 @@ namespace E_Commerce.ApplicationLayer.Service
 
             if (!await _roleManager.RoleExistsAsync(AppRole.customer.ToString()))
                 await _roleManager.CreateAsync(new IdentityRole(AppRole.customer.ToString()));
-        }
+        } 
 
         private async Task<IdentityResult> AssignUserRole(User user, string role)
         {
@@ -95,15 +97,15 @@ namespace E_Commerce.ApplicationLayer.Service
             }
 
             // Assign role
-            return await _userManager.AddToRoleAsync(user, role.ToString());
+            return await _userManager.AddToRoleAsync(user, role);
         }
 
         private async Task<IdentityResult> AddUserClaims(User user)
         {
-            var claims = new List<Claim>
+            var claims = new List<Claim>   // like identify for any one 
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
             };
 
             return await _userManager.AddClaimsAsync(user, claims);

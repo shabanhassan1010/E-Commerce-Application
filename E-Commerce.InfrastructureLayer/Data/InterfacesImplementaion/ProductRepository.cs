@@ -18,12 +18,12 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
 
         public async Task<IReadOnlyList<string>> GetBrandsAsync()
         {
-            return await context.products.Select(B => B.Brand)
+            return await context.products.AsNoTracking().Select(B => B.Brand)
                     .Distinct().ToListAsync();
         }
         public async Task<IReadOnlyList<string>> GetTypesAsync()
         {
-            return await context.products.Select(t => t.Type)
+            return await context.products.AsNoTracking().Select(t => t.Type)
                 .Distinct().ToListAsync();
         }
         public async Task<PaginationResponse<Product>> GetProductsPagedAsync(int pageIndex, int pageSize)
@@ -32,7 +32,7 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
             if (pageSize  < 1) pageSize = 10;  // each page have 10 items so must return 10items for him
 
             // Get total number of items
-            var totalItems = await context.products.CountAsync();
+            var totalItems = await context.products.AsNoTracking().CountAsync();
 
             // Fetch paginated data (ordered by Id for consistency)
             var data = await context.products.OrderBy(p => p.Id)
@@ -44,7 +44,7 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
         }
         public async Task<IReadOnlyList<Product>> FilterProductByBrand(string? brand, string? type , string? sort)
         {
-            var query = context.products.AsQueryable();
+            var query = context.products.AsNoTracking();
             if (!string.IsNullOrWhiteSpace(brand))
                 query = query.Where(b => b.Brand == brand);
 
@@ -65,7 +65,7 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
                 return await context.products.ToListAsync();
 
             searchTerm = searchTerm.ToLower();
-            return await context.products
+            return await context.products.AsNoTracking()
                 .Where(p =>
                     p.Name.ToLower().StartsWith(searchTerm) ||       
                     p.Description.ToLower().StartsWith(searchTerm) || 

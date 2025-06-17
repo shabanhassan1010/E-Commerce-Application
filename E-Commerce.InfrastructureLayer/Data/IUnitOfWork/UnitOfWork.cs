@@ -11,6 +11,7 @@ namespace E_Commerce.DomainLayer
         private readonly ApplicationDBContext context;
         private IProductRepository _productRepository;
         private ICartRepository _cartRepository;
+        private IShoppingCartRepository _shoppingCartRepository;
 
         public IProductRepository productRepository 
         {
@@ -32,6 +33,20 @@ namespace E_Commerce.DomainLayer
                 return _cartRepository;
             }
             set => _cartRepository = value;
+        }
+
+        public IShoppingCartRepository shoppingCartRepository
+        {
+            get
+            {
+                if(_shoppingCartRepository == null)
+                    _shoppingCartRepository = new ShoppingCartRepository(context);
+                return _shoppingCartRepository;
+            }
+            set
+            {
+                _shoppingCartRepository = value;
+            }
         }
 
         public UnitOfWork(ApplicationDBContext context)

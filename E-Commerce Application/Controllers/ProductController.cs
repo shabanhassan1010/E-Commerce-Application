@@ -2,6 +2,7 @@
 using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 #endregion
@@ -22,6 +23,7 @@ namespace E_Commerce_Application.Controllers
 
         #region GetAll
         [HttpGet("GetAll")]
+        [Authorize(Policy = "AdminPolicy")]
         [EndpointSummary("Get All Products")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Product>))]
         [ProducesResponseType(404)]
@@ -53,6 +55,7 @@ namespace E_Commerce_Application.Controllers
 
         #region GetAllPaginated
         [HttpGet("GetAllPaginated")]
+
         [EndpointSummary("Get All Product Paginated")]
         [ProducesResponseType(200, Type = typeof(PaginationResponse<Product>))]
         [ProducesResponseType(400)]
@@ -88,6 +91,7 @@ namespace E_Commerce_Application.Controllers
 
         #region CreateProduct
         [HttpPost("CreateProduct")]
+        [Authorize(Policy = "AdminPolicy")]
         [EndpointSummary("Create New Product")]
         [ProducesResponseType(201, Type = typeof(Product))]
         [ProducesResponseType(400)]
@@ -115,6 +119,7 @@ namespace E_Commerce_Application.Controllers
 
         #region UpdateProduct
         [HttpPut("UpdateProduct/{id:int}")]
+        [Authorize(Policy = "AdminPolicy")]
         [EndpointSummary("Update Existing Product")]
         [ProducesResponseType(200, Type = typeof(Product))]
         [ProducesResponseType(400)]
@@ -182,6 +187,7 @@ namespace E_Commerce_Application.Controllers
 
         #region DeleteProduct
         [HttpDelete("DeleteProduct/{id:int}")]
+        [Authorize(Policy = "AdminPolicy")]
         [EndpointSummary("Delete Product")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]

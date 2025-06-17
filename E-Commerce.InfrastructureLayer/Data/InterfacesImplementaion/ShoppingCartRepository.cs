@@ -8,16 +8,19 @@ namespace E_Commerce.InfrastructureLayer.Data.InterfacesImplementaion
 {
     public class ShoppingCartRepository : GenericRepository<ShoppingCart>, IShoppingCartRepository
     {
+        #region Context
         private readonly ApplicationDBContext context;
-
-        public ShoppingCartRepository(ApplicationDBContext context) : base(context) 
+        public ShoppingCartRepository(ApplicationDBContext context) : base(context)
         {
             this.context = context;
         }
+        #endregion
+
 
         public async Task<ShoppingCart> GetByUserIdAsync(string userId)
         {
-            return await context.shoppingCarts.FirstOrDefaultAsync(c => c.UserId == userId);
+            return await context.shoppingCarts.Include(c => c.CartItems)
+               .FirstOrDefaultAsync(c => c.UserId == userId);
         }
     }
 }

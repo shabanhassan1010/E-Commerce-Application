@@ -28,7 +28,7 @@ namespace E_Commerce_Application.Controllers
 
         #region Register
         [HttpPost("Register")]
-        [EndpointSummary("Register For Admin")]
+        [EndpointSummary("Register")]
         public async Task<ActionResult> Register([FromBody] RegisterDto registerDto)
         {
             if (!ModelState.IsValid)
@@ -45,7 +45,7 @@ namespace E_Commerce_Application.Controllers
 
         #region Login
         [HttpPost("Login")]
-        [EndpointSummary("Login For Admin")]
+        [EndpointSummary("Login")]
         public async Task<ActionResult<TokenDto>> Login([FromBody] LoginDto loginDto)
         {
             if (!ModelState.IsValid)
@@ -62,6 +62,7 @@ namespace E_Commerce_Application.Controllers
 
         #region ForgotPassword
         [HttpPost("forgot-password")]
+        [EndpointSummary("Forgot Password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
         {
             if (!ModelState.IsValid)
@@ -77,6 +78,8 @@ namespace E_Commerce_Application.Controllers
 
         #region ResetPassword
         [HttpPost("reset-password")]
+        [EndpointSummary("Reset Password")]
+
         public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
         {
             if (!ModelState.IsValid)

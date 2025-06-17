@@ -1,20 +1,16 @@
 #region
-using E_Commerce.ApplicationLayer.ActionFilters;
 using E_Commerce.ApplicationLayer.IService;
+using E_Commerce.ApplicationLayer.Mapper;
 using E_Commerce.ApplicationLayer.MiddleWares;
 using E_Commerce.ApplicationLayer.Service;
 using E_Commerce.DomainLayer;
 using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
-using E_Commerce.InfrastructureLayer.Data;
 using E_Commerce.InfrastructureLayer.Data.DBContext;
-using E_Commerce.InfrastructureLayer.Data.DBContext.Repositories;
-using E_Commerce.InfrastructureLayer.Data.GenericClass;
 using E_Commerce.InfrastructureLayer.Data.InterfacesImplementaion;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
@@ -27,7 +23,37 @@ namespace E_Commerce_Application
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(
+            //    c =>
+            //{
+            //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "E-Commerce API", Version = "v1" });
+
+            //    // Add security definition
+            //    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            //    {
+            //        Description = "JWT Authorization header",
+            //        Name = "Authorization",
+            //        In = ParameterLocation.Header,
+            //        Type = SecuritySchemeType.ApiKey,
+            //        Scheme = "Bearer"
+            //    });
+
+            //    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            //    {
+            //        {
+            //new OpenApiSecurityScheme
+            //{
+            //    Reference = new OpenApiReference
+            //    {
+            //        Type = ReferenceType.SecurityScheme,
+            //        Id = "Bearer"
+            //    }
+            //},
+            //Array.Empty<string>()
+            //        }
+            //    });
+            //}
+            );
 
             #region DbContext Configuration
             builder.Services.AddDbContext<ApplicationDBContext>(options =>
@@ -36,11 +62,11 @@ namespace E_Commerce_Application
 
 
             #region Redis Cache Configuration
-            builder.Services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = builder.Configuration.GetConnectionString("Redis");
-                options.InstanceName = "ECommerce_";
-            });
+            //builder.Services.AddStackExchangeRedisCache(options =>
+            //{
+            //    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+            //    options.InstanceName = "ECommerce_";
+            //});
             #endregion
 
 
@@ -54,8 +80,7 @@ namespace E_Commerce_Application
                 options.Password.RequiredLength = 8;
                 options.User.RequireUniqueEmail = true;
             })
-            .AddEntityFrameworkStores<ApplicationDBContext>()
-            .AddDefaultTokenProviders();
+            .AddEntityFrameworkStores<ApplicationDBContext>().AddDefaultTokenProviders();
             #endregion
 
 
@@ -90,9 +115,9 @@ namespace E_Commerce_Application
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdminPolicy", policy =>
-                    policy.RequireClaim(ClaimTypes.Role, AppRole.Admin.ToString()));
+                    policy.RequireRole(ClaimTypes.Role, AppRole.Admin.ToString()));
                 options.AddPolicy("CustomerPolicy", policy =>
-                    policy.RequireClaim(ClaimTypes.Role, AppRole.customer.ToString()));
+                    policy.RequireRole(ClaimTypes.Role, AppRole.customer.ToString()));
             });
             #endregion
 
@@ -101,14 +126,16 @@ namespace E_Commerce_Application
             builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddAutoMapper(typeof(CartMappingProfile));
             #endregion
 
 
             #region Action Filters Registration
-            builder.Services.AddControllers(options =>
-            {
-                options.Filters.Add<LogSensitiveActionAttribute>(); // Register global filter
-            });
+            //builder.Services.AddControllers(options =>
+            //{
+            //    options.Filters.Add<LogSensitiveActionAttribute>(); // Register global filter
+            //});
             #endregion
 
             //builder.Services.AddCors();
@@ -120,8 +147,7 @@ namespace E_Commerce_Application
 
             #region Middleware Pipeline Configuration
             // Exception handling should be first in the pipeline
-            app.UseMiddleware<ExceptionMiddleware>();
-
+            //app.UseMiddleware<ExceptionMiddleware>();
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
@@ -129,6 +155,8 @@ namespace E_Commerce_Application
             }
 
             app.UseHttpsRedirection();
+
+            //app.UseRouting();
 
             app.UseAuthentication();
 
