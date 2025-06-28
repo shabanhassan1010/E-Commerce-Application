@@ -1,10 +1,14 @@
 ﻿#region MyRegion
+using AutoMapper;
 using E_Commerce.ApplicationLayer.Dtos.Account.ForgetPassword;
 using E_Commerce.ApplicationLayer.Dtos.Account.Login;
+using E_Commerce.ApplicationLayer.Dtos.Account.LogOut;
 using E_Commerce.ApplicationLayer.Dtos.Account.Rigster;
 using E_Commerce.ApplicationLayer.IService;
 using E_Commerce.DomainLayer.Entities;
+using E_Commerce.DomainLayer.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -22,15 +26,21 @@ namespace E_Commerce.ApplicationLayer.Service
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _config;
+        private readonly IMapper mapper;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUserRepository userRepository;
+
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager,
-            IConfiguration config,
-            RoleManager<IdentityRole> roleManager)
+            IConfiguration config,IMapper mapper,
+            RoleManager<IdentityRole> roleManager , 
+            IUserRepository userRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _config = config;
+            this.mapper = mapper;
             _roleManager = roleManager;
+            this.userRepository = userRepository;
         }
         #endregion
 
@@ -167,5 +177,15 @@ namespace E_Commerce.ApplicationLayer.Service
 
             return await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
         }
+
+        public async Task<UserDto?> LogOutAsync(int userId)
+        {
+            var user = await userRepository.GetUser(userId);
+            if (user == null)
+                return null;
+
+            return mapper.Map<UserDto>(user);
+        }
+
     }
 }

@@ -11,6 +11,7 @@ namespace E_Commerce_Application.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Policy = "AdminPolicy")]
     public class ProductController : ControllerBase
     {
         #region DBContext
@@ -23,7 +24,7 @@ namespace E_Commerce_Application.Controllers
 
         #region GetAll
         [HttpGet("GetAll")]
-        [Authorize(Policy = "AdminPolicy")]
+        [Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Get All Products")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Product>))]
         [ProducesResponseType(404)]
@@ -37,6 +38,7 @@ namespace E_Commerce_Application.Controllers
         }
 
         [HttpGet("FilterProductByBrandOrTypeOrPrice")]
+        [Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Filter Product By Brand Or Type Or Price")]
         [ProducesResponseType(200, Type = typeof(IReadOnlyList<Product>))]
         [ProducesResponseType(404)]
@@ -55,7 +57,7 @@ namespace E_Commerce_Application.Controllers
 
         #region GetAllPaginated
         [HttpGet("GetAllPaginated")]
-
+        [Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Get All Product Paginated")]
         [ProducesResponseType(200, Type = typeof(PaginationResponse<Product>))]
         [ProducesResponseType(400)]
@@ -76,6 +78,7 @@ namespace E_Commerce_Application.Controllers
 
         #region GetProduct
         [HttpGet("GetProduct/{id:int}")]
+        [Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Get Product by ID")]
         [ProducesResponseType(200, Type = typeof(Product))]
         [ProducesResponseType(404)]
@@ -157,6 +160,7 @@ namespace E_Commerce_Application.Controllers
 
         #region Get Product Brands
         [HttpGet("GetBrands")]
+        [Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Get All Product Brands")]
         [ProducesResponseType(200, Type = typeof(IReadOnlyList<string>))]
         [ProducesResponseType(404)]
@@ -172,6 +176,7 @@ namespace E_Commerce_Application.Controllers
 
         #region Get Product Types
         [HttpGet("GetTypes")]
+        [Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Get All Product Types")]
         [ProducesResponseType(200, Type = typeof(IReadOnlyList<string>))]
         [ProducesResponseType(404)]
@@ -209,6 +214,7 @@ namespace E_Commerce_Application.Controllers
 
         #region SearchProducts
         [HttpGet("Search")]
+        [Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Search Products")]
         [ProducesResponseType(200, Type = typeof(IReadOnlyList<Product>))]
         [ProducesResponseType(404)]

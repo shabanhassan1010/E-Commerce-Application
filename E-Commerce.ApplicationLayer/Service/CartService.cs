@@ -19,7 +19,6 @@ namespace E_Commerce.ApplicationLayer.Service
         }
         #endregion
 
-
         public async Task<CartResponseDto> GetCartAsync(string userId)
         {
             var cart = await _unitOfWork.cartRepository.GetCartWithItemsAsync(userId);
@@ -33,7 +32,6 @@ namespace E_Commerce.ApplicationLayer.Service
                 //Total = CalculateCartTotal(cart.CartItems)
             };
         }
-
         public async Task<CartItemDto> AddItemToCartAsync(string userId, AddToCartDto dto)
         {
             var checkCartIsFound = await _unitOfWork.shoppingCartRepository.GetByUserIdAsync(userId);
@@ -49,47 +47,44 @@ namespace E_Commerce.ApplicationLayer.Service
 
             return _mapper.Map<CartItemDto>(newItem);
         }
+        public async Task<bool> DeleteItemFromCartAsync(string userId, int productId)
+        {
+            var cart = await _unitOfWork.cartRepository.GetCartByUserIdAsync(userId);
+            if (cart == null) return false;  // this user have not any items in cart
 
-        //public async Task<bool> RemoveItemFromCartAsync(string userId, int productId)
-        //{
-        //    var cart = await _unitOfWork.cartRepository.GetCartByUserIdAsync(userId);
-        //    if (cart == null) return false;
+            var item = await _unitOfWork.cartRepository.GetCartItemAsync(productId, cart.Id);
+            if (item == null) return false;
 
-        //    var item = await _unitOfWork.cartRepository.GetCartItemAsync(productId, cart.Id);
-        //    if (item == null) return false;
+            await _unitOfWork.cartRepository.DeleteAsync(item);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
+        public async Task<bool> UpdateItemQuantityAsync(string userId, UpdateCartItemDto dto)
+        {
+            var cart = await _unitOfWork.cartRepository.GetCartByUserIdAsync(userId);
+            if (cart == null) return false;
 
-        //    await _unitOfWork.cartRepository.DeleteAsync(item);
-        //    await _unitOfWork.SaveAsync();
-        //    return true;
-        //}
+            var item = await _unitOfWork.cartRepository.GetCartItemAsync(dto.ProductId, cart.Id);
+            if (item == null) return false;
 
-        //public async Task<bool> UpdateItemQuantityAsync(string userId, UpdateCartItemDto dto)
-        //{
-        //    var cart = await _unitOfWork.cartRepository.GetCartByUserIdAsync(userId);
-        //    if (cart == null) return false;
+            item.Quantity = dto.Quantity;
+            await _unitOfWork.cartRepository.UpdateAsync(item);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
+        public async Task<bool> ClearCartAsync(string userId)
+        {
+            var cart = await _unitOfWork.cartRepository.GetCartWithItemsAsync(userId);
+            if (cart == null || !cart.CartItems.Any()) return false;
 
-        //    var item = await _unitOfWork.cartRepository.GetCartItemAsync(dto.ProductId, cart.Id);
-        //    if (item == null) return false;
+            foreach (var item in cart.CartItems.ToList())
+            {
+                await _unitOfWork.cartRepository.DeleteAsync(item);
+            }
 
-        //    item.Quantity = dto.Quantity;
-        //    await _unitOfWork.cartRepository.UpdateAsync(item);
-        //    await _unitOfWork.SaveAsync();
-        //    return true;
-        //}
-
-        //public async Task<bool> ClearCartAsync(string userId)
-        //{
-        //    var cart = await _unitOfWork.cartRepository.GetCartWithItemsAsync(userId);
-        //    if (cart == null || !cart.CartItems.Any()) return false;
-
-        //    foreach (var item in cart.CartItems.ToList())
-        //    {
-        //        await _unitOfWork.cartRepository.DeleteAsync(item);
-        //    }
-
-        //    await _unitOfWork.SaveAsync();
-        //    return true;
-        //}
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
 
         private async Task<ShoppingCart> CreateNewCart(string userId)
         {

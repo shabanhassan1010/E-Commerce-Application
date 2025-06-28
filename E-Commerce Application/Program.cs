@@ -23,52 +23,12 @@ namespace E_Commerce_Application
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddSwaggerGen(
-            //    c =>
-            //{
-            //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "E-Commerce API", Version = "v1" });
-
-            //    // Add security definition
-            //    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            //    {
-            //        Description = "JWT Authorization header",
-            //        Name = "Authorization",
-            //        In = ParameterLocation.Header,
-            //        Type = SecuritySchemeType.ApiKey,
-            //        Scheme = "Bearer"
-            //    });
-
-            //    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-            //    {
-            //        {
-            //new OpenApiSecurityScheme
-            //{
-            //    Reference = new OpenApiReference
-            //    {
-            //        Type = ReferenceType.SecurityScheme,
-            //        Id = "Bearer"
-            //    }
-            //},
-            //Array.Empty<string>()
-            //        }
-            //    });
-            //}
-            );
+            builder.Services.AddSwaggerGen();
 
             #region DbContext Configuration
             builder.Services.AddDbContext<ApplicationDBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             #endregion
-
-
-            #region Redis Cache Configuration
-            //builder.Services.AddStackExchangeRedisCache(options =>
-            //{
-            //    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-            //    options.InstanceName = "ECommerce_";
-            //});
-            #endregion
-
 
             #region Identity Configuration  -> ( Must be before JWT Authentication)
             builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -82,7 +42,6 @@ namespace E_Commerce_Application
             })
             .AddEntityFrameworkStores<ApplicationDBContext>().AddDefaultTokenProviders();
             #endregion
-
 
             #region JWT Authentication Configuration
 
@@ -110,26 +69,24 @@ namespace E_Commerce_Application
             });
             #endregion
 
-
             #region Authorization Policies
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdminPolicy", policy =>
-                    policy.RequireRole(ClaimTypes.Role, AppRole.Admin.ToString()));
+                    policy.RequireRole(AppRole.Admin.ToString()));
                 options.AddPolicy("CustomerPolicy", policy =>
-                    policy.RequireRole(ClaimTypes.Role, AppRole.customer.ToString()));
+                    policy.RequireRole(AppRole.customer.ToString()));
             });
             #endregion
-
 
             #region Dependency Injection
             builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddAutoMapper(typeof(CartMappingProfile));
             #endregion
-
 
             #region Action Filters Registration
             //builder.Services.AddControllers(options =>

@@ -2,6 +2,7 @@
 using E_Commerce.ApplicationLayer.Dtos.Account.Login;
 using E_Commerce.ApplicationLayer.Dtos.Account.Rigster;
 using E_Commerce.ApplicationLayer.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -17,14 +18,12 @@ namespace E_Commerce_Application.Controllers
         #region configuration
         private readonly IConfiguration _configuration;
         private readonly IUserService userService;
-
         public AccountController(IConfiguration configuration , IUserService userService)
         {
             _configuration = configuration;
             this.userService = userService;
         }
         #endregion
-
 
         #region Register
         [HttpPost("Register")]
@@ -79,7 +78,6 @@ namespace E_Commerce_Application.Controllers
         #region ResetPassword
         [HttpPost("reset-password")]
         [EndpointSummary("Reset Password")]
-
         public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
         {
             if (!ModelState.IsValid)
@@ -93,5 +91,22 @@ namespace E_Commerce_Application.Controllers
         }
         #endregion
 
+        #region LogOut
+        [HttpPost("logout")]
+        [EndpointSummary("Logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var userIdClaim = User.FindFirst("uid")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+
+            await userService.LogOutAsync(userId);
+
+            return Ok(new { message = "Logged out successfully." });
+        }
+        #endregion
     }
 }

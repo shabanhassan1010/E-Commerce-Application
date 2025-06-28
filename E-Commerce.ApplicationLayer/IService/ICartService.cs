@@ -7,8 +7,8 @@ namespace E_Commerce.ApplicationLayer.IService
     {
         Task<CartResponseDto> GetCartAsync(string userId);
         Task<CartItemDto> AddItemToCartAsync(string userId, AddToCartDto dto);
-        //Task<bool> RemoveItemFromCartAsync(string userId, int productId);
-        //Task<bool> UpdateItemQuantityAsync(string userId, UpdateCartItemDto dto);
-        //Task<bool> ClearCartAsync(string userId);
+        Task<bool> DeleteItemFromCartAsync(string userId, int productId);
+        Task<bool> UpdateItemQuantityAsync(string userId, UpdateCartItemDto dto);
+        Task<bool> ClearCartAsync(string userId);
     }
 }
