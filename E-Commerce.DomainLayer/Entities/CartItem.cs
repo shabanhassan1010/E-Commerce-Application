@@ -11,7 +11,7 @@ namespace E_Commerce.DomainLayer.Entities
         public int Quantity { get; set; }
 
         [ForeignKey("ShoppingCart")]
-        public string ShoppingCartId { get; set; }
+        public int ShoppingCartId { get; set; }
         public ShoppingCart ShoppingCart { get; set; }
     }
 }

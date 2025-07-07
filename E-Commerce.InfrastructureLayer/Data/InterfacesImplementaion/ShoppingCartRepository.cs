@@ -19,8 +19,8 @@ namespace E_Commerce.InfrastructureLayer.Data.InterfacesImplementaion
 
         public async Task<ShoppingCart> GetByUserIdAsync(string userId)
         {
-            return await context.shoppingCarts.Include(c => c.CartItems)
-               .FirstOrDefaultAsync(c => c.UserId == userId);
+            return await context.shoppingCarts.Include(c => c.CartItems).ThenInclude(ci => ci.Product)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
         }
     }
 }

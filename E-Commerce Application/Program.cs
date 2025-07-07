@@ -73,18 +73,20 @@ namespace E_Commerce_Application
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdminPolicy", policy =>
-                    policy.RequireRole(AppRole.Admin.ToString()));
+                    policy.RequireClaim(ClaimTypes.Role, "Admin"));
+
                 options.AddPolicy("CustomerPolicy", policy =>
-                    policy.RequireRole(AppRole.customer.ToString()));
+                    policy.RequireClaim(ClaimTypes.Role, "customer"));
             });
             #endregion
 
             #region Dependency Injection
             builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             builder.Services.AddScoped<ICartRepository, CartRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ICartService, CartService>();
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddAutoMapper(typeof(CartMappingProfile));
             #endregion
 

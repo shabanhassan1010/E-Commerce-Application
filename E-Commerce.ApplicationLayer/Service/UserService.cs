@@ -84,7 +84,6 @@ namespace E_Commerce.ApplicationLayer.Service
             var claimResult = await AddUserClaims(user);
             return claimResult;
         }
-
         private async Task EnsureRolesExist()
         {
             if (!await _roleManager.RoleExistsAsync(AppRole.Admin.ToString()))
@@ -93,7 +92,6 @@ namespace E_Commerce.ApplicationLayer.Service
             if (!await _roleManager.RoleExistsAsync(AppRole.customer.ToString()))
                 await _roleManager.CreateAsync(new IdentityRole(AppRole.customer.ToString()));
         } 
-
         private async Task<IdentityResult> AssignUserRole(User user, string role)
         {
             // Validate requested role
@@ -109,7 +107,6 @@ namespace E_Commerce.ApplicationLayer.Service
             // Assign role
             return await _userManager.AddToRoleAsync(user, role);
         }
-
         private async Task<IdentityResult> AddUserClaims(User user)
         {
             var claims = new List<Claim>   // like identify for any one 
@@ -120,7 +117,6 @@ namespace E_Commerce.ApplicationLayer.Service
 
             return await _userManager.AddClaimsAsync(user, claims);
         }
-
         public async Task<TokenDto?> LoginAsync(LoginDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -132,6 +128,14 @@ namespace E_Commerce.ApplicationLayer.Service
                 return null;
 
             var claimsList = await _userManager.GetClaimsAsync(user);
+
+            // ✅ Add user role as a claim
+            var roles = await _userManager.GetRolesAsync(user);
+            var role = roles.FirstOrDefault();
+            if (!string.IsNullOrEmpty(role))
+            {
+                claimsList.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var secretKey = _config["JwtSettings:Key"];
             var algorithm = SecurityAlgorithms.HmacSha256;

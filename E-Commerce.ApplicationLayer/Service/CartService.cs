@@ -22,30 +22,57 @@ namespace E_Commerce.ApplicationLayer.Service
         public async Task<CartResponseDto> GetCartAsync(string userId)
         {
             var cart = await _unitOfWork.cartRepository.GetCartWithItemsAsync(userId);
-            if (cart == null)
-                cart = await CreateNewCart(userId);
 
-            return new CartResponseDto
+            if (cart == null)
             {
-                Id = cart.Id,
-                Items = _mapper.Map<List<CartItemDto>>(cart.CartItems),
-                //Total = CalculateCartTotal(cart.CartItems)
-            };
+                cart = await CreateNewCart(userId);
+                await _unitOfWork.SaveAsync();
+            }
+
+            return _mapper.Map<CartResponseDto>(cart);
         }
         public async Task<CartItemDto> AddItemToCartAsync(string userId, AddToCartDto dto)
         {
-            var checkCartIsFound = await _unitOfWork.shoppingCartRepository.GetByUserIdAsync(userId);
-            if (checkCartIsFound == null)
-                return null; // or throw a custom NotFoundException
+            var cart = await _unitOfWork.shoppingCartRepository.GetByUserIdAsync(userId);
+            if (cart == null)
+            {
+                cart = new ShoppingCart
+                {
+                    UserId = userId,
+                    CartItems = new List<CartItem>()
+                };
+                await _unitOfWork.shoppingCartRepository.AddAsync(cart);
+                await _unitOfWork.SaveAsync();
+            }
 
-            var newItem = _mapper.Map<CartItem>(dto);
-            newItem.ShoppingCartId = checkCartIsFound.Id;
+            var product = await _unitOfWork.productRepository.GetByIdAsync(dto.ProductId);
+            if (product == null)
+                throw new Exception("Product not found");
+
+            var existingItem = await _unitOfWork.cartRepository.GetCartItemAsync(dto.ProductId, cart.Id);
+
+            if (existingItem != null)
+            {
+                existingItem.Quantity += dto.Quantity;
+                await _unitOfWork.cartRepository.UpdateAsync(existingItem);
+                await _unitOfWork.SaveAsync();
+
+                var itemWithProduct = await _unitOfWork.cartRepository.GetCartItemWithProductByIdAsync(existingItem.Id);
+                return _mapper.Map<CartItemDto>(itemWithProduct);
+            }
+
+            var newItem = new CartItem
+            {
+                ProductId = dto.ProductId,
+                Quantity = dto.Quantity,
+                ShoppingCartId = cart.Id
+            };
 
             await _unitOfWork.cartRepository.AddAsync(newItem);
             await _unitOfWork.SaveAsync();
 
-
-            return _mapper.Map<CartItemDto>(newItem);
+            var addedItem = await _unitOfWork.cartRepository.GetCartItemWithProductAsync(newItem.ProductId, cart.Id);
+            return _mapper.Map<CartItemDto>(addedItem);
         }
         public async Task<bool> DeleteItemFromCartAsync(string userId, int productId)
         {
@@ -54,6 +81,13 @@ namespace E_Commerce.ApplicationLayer.Service
 
             var item = await _unitOfWork.cartRepository.GetCartItemAsync(productId, cart.Id);
             if (item == null) return false;
+
+            var product = await _unitOfWork.productRepository.GetByIdAsync(productId);
+            if (product != null && product.QuantityInStock >= item.Quantity)
+            {
+                product.QuantityInStock -= item.Quantity;
+                await _unitOfWork.productRepository.UpdateAsync(product);
+            }
 
             await _unitOfWork.cartRepository.DeleteAsync(item);
             await _unitOfWork.SaveAsync();
@@ -90,8 +124,8 @@ namespace E_Commerce.ApplicationLayer.Service
         {
             var newCart = new ShoppingCart
             {
-                Id = Guid.NewGuid().ToString(),
-                UserId = userId
+                UserId = userId,
+                CartItems = new List<CartItem>()
             };
             await _unitOfWork.shoppingCartRepository.AddAsync(newCart);
             await _unitOfWork.SaveAsync();

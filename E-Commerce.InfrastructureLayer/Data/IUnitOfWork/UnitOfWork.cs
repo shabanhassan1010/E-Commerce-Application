@@ -2,17 +2,23 @@
 using E_Commerce.InfrastructureLayer.Data.DBContext;
 using E_Commerce.InfrastructureLayer.Data.GenericClass;
 using E_Commerce.InfrastructureLayer.Data.InterfacesImplementaion;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace E_Commerce.DomainLayer
 {
     public class UnitOfWork : IUnitOfWork
     {
+        #region
         private readonly ApplicationDBContext context;
         private IProductRepository _productRepository;
         private ICartRepository _cartRepository;
         private IShoppingCartRepository _shoppingCartRepository;
-
+        private IOrderRepository _orderRepository;
+        private ICartItemRepository _cartItemRepository;
+        public UnitOfWork(ApplicationDBContext context)
+        {
+            this.context = context;
+        }
+        #endregion
         public IProductRepository productRepository 
         {
             get
@@ -23,7 +29,6 @@ namespace E_Commerce.DomainLayer
             }
             set => _productRepository = value;
         }
-
         public ICartRepository cartRepository
         {
             get
@@ -34,7 +39,6 @@ namespace E_Commerce.DomainLayer
             }
             set => _cartRepository = value;
         }
-
         public IShoppingCartRepository shoppingCartRepository
         {
             get
@@ -48,10 +52,26 @@ namespace E_Commerce.DomainLayer
                 _shoppingCartRepository = value;
             }
         }
-
-        public UnitOfWork(ApplicationDBContext context)
+        public IOrderRepository OrdersRepository
         {
-            this.context = context;
+            get
+            {
+                if(_orderRepository == null)
+                    _orderRepository = new OrderRepository(context);
+                return _orderRepository;
+            }
+            set => _orderRepository = value; 
+        }
+        public ICartItemRepository CartItemsRepository 
+        {
+            get
+            {
+                if (_cartItemRepository == null)
+                    _cartItemRepository = new CartItemRepository(context);
+                return _cartItemRepository;
+
+            }
+            set => _cartItemRepository = value;
         }
 
         public async Task<bool> SaveAsync()

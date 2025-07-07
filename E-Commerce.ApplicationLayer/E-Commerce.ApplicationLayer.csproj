@@ -23,8 +23,4 @@
     <ProjectReference Include="..\E-Commerce.DomainLayer\E-Commerce.DomainLayer.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ApiResponse\" />
-  </ItemGroup>
-
 </Project>

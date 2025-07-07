@@ -7,7 +7,11 @@ namespace E_Commerce.DomainLayer.Interfaces
     {
         Task<ShoppingCart> GetCartByUserIdAsync(string userId);
         Task<ShoppingCart> GetCartWithItemsAsync(string userId);
-        Task<CartItem> GetCartItemAsync(int productId, string shoppingCartId);
-        Task<IEnumerable<CartItem>> GetCartItemsAsync(string shoppingCartId);
+        Task<CartItem> GetCartItemAsync(int productId, int shoppingCartId);
+        Task<IEnumerable<CartItem>> GetCartItemsAsync(int shoppingCartId);
+        void RemoveRange(IEnumerable<CartItem> entities);
+        Task<CartItem?> GetCartItemWithProductByIdAsync(int cartItemId);
+        Task<CartItem?> GetCartItemWithProductAsync(int productId, int shoppingCartId);
+        IQueryable<CartItem> GetQueryable();
     }
 }

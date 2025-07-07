@@ -15,8 +15,8 @@ namespace E_Commerce.InfrastructureLayer.Data.DBContext
         public DbSet<Product> products { get; set; }
         public DbSet<ShoppingCart> shoppingCarts { get; set; }
         public DbSet<CartItem> cartItems { get; set; }
-        //public DbSet<Address> addresses { get; set; }
-        //public DbSet<Order> orders { get; set; }
+        public DbSet<Order> orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

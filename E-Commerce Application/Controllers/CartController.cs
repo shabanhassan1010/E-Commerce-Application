@@ -1,17 +1,14 @@
-﻿using E_Commerce.ApplicationLayer.ActionFilters;
-using E_Commerce.ApplicationLayer.Dtos.ProductCart;
+﻿using E_Commerce.ApplicationLayer.Dtos.ProductCart;
 using E_Commerce.ApplicationLayer.IService;
-using E_Commerce.ApplicationLayer.MiddleWares;
-using E_Commerce.DomainLayer.Entities;
-using E_Commerce.DomainLayer.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace E_Commerce_Application.Controllers
 {
-/*    [Authorize]*/ // Base authorization for all endpoints
+    //[Authorize] // Base authorization for all endpoints
     //[LogSensitiveAction]
+    [Authorize(Policy = "CustomerPolicy")]
     public class CartController : BaseApiController
     {
         #region Context
@@ -22,26 +19,32 @@ namespace E_Commerce_Application.Controllers
         }
         #endregion
 
-        protected string GetUserIdFromDB => User.FindFirstValue(ClaimTypes.NameIdentifier);
+        protected string? GetUserId()
+        {
+            return User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
 
+        #region  GetCart
         [HttpGet]
-        //[Authorize(Policy = "CustomerPolicy")]
         public async Task<ActionResult<CartResponseDto>> GetCart()
         {
-            var userId = GetUserIdFromDB;
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId)) 
+                return Unauthorized();
 
             var cart = await _cartService.GetCartAsync(userId);
             return Ok(cart);
         }
+        #endregion
 
+        #region AddItemToCart
         [HttpPost("items")]
-        //[Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Add Item To Cart")]
         public async Task<ActionResult<CartItemDto>> AddItemToCart(AddToCartDto dto)
         {
-            var userId = GetUserIdFromDB;
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
             var result = await _cartService.AddItemToCartAsync(userId, dto);
             if (result == null)
@@ -49,14 +52,15 @@ namespace E_Commerce_Application.Controllers
 
             return Ok(result);
         }
+        #endregion
 
-        [HttpDelete("DeleteItem")]
-        //[Authorize(Policy = "CustomerPolicy")]
+        #region DeleteItemFromCart
+        [HttpDelete("DeleteItem/{productId}")]
         [EndpointSummary("Delete Item From Cart")]
         public async Task<IActionResult> DeleteItemFromCart(int productId)
         {
-            var userId = GetUserIdFromDB;
-            if (string.IsNullOrEmpty(userId)) 
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
             var success = await _cartService.DeleteItemFromCartAsync(userId, productId);
@@ -64,29 +68,34 @@ namespace E_Commerce_Application.Controllers
                 return NotFound();
             return Ok(success);
         }
+        #endregion
 
+        #region UpdateItemQuantity
         [HttpPut("items")]
-        //[Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Update Item FromCart")]
         public async Task<IActionResult> UpdateItemQuantity(UpdateCartItemDto dto)
         {
-            var userId = GetUserIdFromDB;
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
             var success = await _cartService.UpdateItemQuantityAsync(userId, dto);
             return success ? NoContent() : NotFound();
         }
+        #endregion
 
+        #region ClearCart
         [HttpDelete("clear")]
-        //[Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Clear All Cart")]
         public async Task<IActionResult> ClearCart()
         {
-            var userId = GetUserIdFromDB;
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
             var success = await _cartService.ClearCartAsync(userId);
             return success ? NoContent() : NotFound();
         }
+        #endregion
     }
 }
