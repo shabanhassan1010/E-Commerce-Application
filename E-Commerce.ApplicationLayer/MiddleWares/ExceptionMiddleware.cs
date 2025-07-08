@@ -32,7 +32,7 @@ namespace E_Commerce.ApplicationLayer.MiddleWares
             }
             catch (Exception ex)    // i will go back and throw Exception
             {
-                _logger.LogError(ex, "Unhandled Exception Occurred!");
+                _logger.LogError(ex,ex.Message,context.Request, "Unhandled Exception Occurred!");
                 await HandleExceptionAsync(context, ex);
             }
          }

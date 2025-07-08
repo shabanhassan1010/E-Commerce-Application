@@ -153,7 +153,6 @@ namespace E_Commerce.ApplicationLayer.Service
 
             return new TokenDto { Token = new JwtSecurityTokenHandler().WriteToken(token) };
         }
-
         public async Task<bool> ForgotPasswordAsync(ForgotPasswordDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -168,7 +167,6 @@ namespace E_Commerce.ApplicationLayer.Service
             // You can use an email service here.
             return true;
         }
-
         public async Task<IdentityResult> ResetPasswordAsync(ResetPasswordDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -181,7 +179,6 @@ namespace E_Commerce.ApplicationLayer.Service
 
             return await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
         }
-
         public async Task<UserDto?> LogOutAsync(int userId)
         {
             var user = await userRepository.GetUser(userId);

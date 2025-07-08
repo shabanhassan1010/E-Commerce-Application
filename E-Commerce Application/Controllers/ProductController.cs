@@ -17,12 +17,10 @@ namespace E_Commerce_Application.Controllers
     {
         #region DBContext
         private readonly IProductService _productService;
-        private readonly ILogger<ProductController> logger;
 
-        public ProductController(IProductService productService, ILogger<ProductController> logger)
+        public ProductController(IProductService productService)
         {
             _productService = productService;
-            this.logger = logger;
         }
         #endregion
 
@@ -57,12 +55,10 @@ namespace E_Commerce_Application.Controllers
         {
             if (page < 1 || pageSize < 1)
                 return BadRequest("Page and pageSize must be greater than 0");
-            logger.LogInformation("Trying to get All products");
             var response = await _productService.GetAllPaginatedAsync(page, pageSize);
 
             if (response == null)
             {
-                logger.LogWarning("Something was happened when you get All products ");
                 return NotFound("No products found");
             }
 
@@ -76,11 +72,9 @@ namespace E_Commerce_Application.Controllers
         [EndpointSummary("Get Product by ID")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            logger.LogInformation("Trying to get product with ID: {Id}", id);
             var product = await _productService.GetProductAsync(id);
             if (product == null)
             {
-                logger.LogWarning("Product with ID: {Id} not found", id);
                 return NotFound($"Product with ID {id} not found");
             }
 
@@ -98,15 +92,12 @@ namespace E_Commerce_Application.Controllers
             var userId = GetById();
             if (string.IsNullOrEmpty(userId))
             {
-                logger.LogWarning("Unauthorized access attempt to FilterProductByBrandOrTypeOrPrice.");
                 return Unauthorized();
             }
-            logger.LogInformation("User {UserId} is filtering products. Brand: {Brand}, Type: {Type}, Sort: {Sort}", userId, brand, type, sort);
 
             var products = await _productService.FilterProductBasedAsync(brand, type, sort);
             if (products == null || !products.Any())
             {
-                logger.LogWarning("No products found for User {UserId} with Brand: {Brand}, Type: {Type}, Sort: {Sort}", userId, brand, type, sort);
                 return NotFound("No products found matching the criteria");
             }
 
