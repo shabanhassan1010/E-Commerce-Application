@@ -6,7 +6,6 @@ using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Entities.Roles;
 using E_Commerce.DomainLayer.Interfaces;
 using Microsoft.Extensions.Logging;
-using System.Runtime.ConstrainedExecution;
 namespace E_Commerce.ApplicationLayer.Service
 {
     public class OrderService : IOrderService

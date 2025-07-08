@@ -8,6 +8,7 @@ using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer.Data.DBContext;
 using E_Commerce.InfrastructureLayer.Data.InterfacesImplementaion;
+using E_Commerce.InfrastructureLayer.EmailSettings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,9 @@ namespace E_Commerce_Application
             builder.Services.AddDbContext<ApplicationDBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             #endregion
+
+            builder.Services.Configure<EmailSetting>(builder.Configuration.GetSection("EmailSettings"));
+
 
             #region Identity Configuration  -> ( Must be before JWT Authentication)
             builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -81,6 +85,7 @@ namespace E_Commerce_Application
             });
             #endregion
 
+
             #region Dependency Injection
             builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             builder.Services.AddScoped<ICartRepository, CartRepository>();
@@ -89,6 +94,7 @@ namespace E_Commerce_Application
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddAutoMapper(typeof(CartMappingProfile));
             //builder.Services.AddSingleton<RequestResponseLoggingMiddleware>();
             //builder.Services.AddScoped<IRequestResponseLogger, RequestResponseLogger>();
