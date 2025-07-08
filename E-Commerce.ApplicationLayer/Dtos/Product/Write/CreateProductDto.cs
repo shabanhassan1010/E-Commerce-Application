@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace E_Commerce.ApplicationLayer.Dtos.Product
+namespace E_Commerce.ApplicationLayer.Dtos.Product.Write
 {
     public class CreateProductDto
     {

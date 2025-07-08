@@ -1,7 +1,6 @@
 ﻿using E_Commerce.ApplicationLayer.Dtos.Account.ForgetPassword;
 using E_Commerce.ApplicationLayer.Dtos.Account.Login;
 using E_Commerce.ApplicationLayer.Dtos.Account.Rigster;
-using E_Commerce.ApplicationLayer.ILogger;
 using E_Commerce.ApplicationLayer.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,13 +19,11 @@ namespace E_Commerce_Application.Controllers
         #region configuration
         private readonly IConfiguration _configuration;
         private readonly IUserService userService;
-        private readonly IRequestResponseLogger logger;
 
-        public AccountController(IConfiguration configuration , IUserService userService , IRequestResponseLogger logger)
+        public AccountController(IConfiguration configuration , IUserService userService )
         {
             _configuration = configuration;
             this.userService = userService;
-            this.logger = logger;
         }
         #endregion
 
@@ -35,7 +32,6 @@ namespace E_Commerce_Application.Controllers
         [EndpointSummary("Register")]
         public async Task<ActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            await logger.LogRequestAsync(Request);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -45,12 +41,10 @@ namespace E_Commerce_Application.Controllers
             if (result.Succeeded)
             {
                 var response = new { message = "registered successfully." };
-                await logger.LogResponseAsync(Response, response);
                 return Ok(response);
             }
             else
             {
-                await logger.LogResponseAsync(Response, result.Errors);
                 return BadRequest(result.Errors);
             }
         }
@@ -61,7 +55,6 @@ namespace E_Commerce_Application.Controllers
         [EndpointSummary("Login")]
         public async Task<ActionResult<TokenDto>> Login([FromBody] LoginDto loginDto)
         {
-            await logger.LogRequestAsync(Request);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -71,13 +64,11 @@ namespace E_Commerce_Application.Controllers
             if (token == null)
             {
                 var error = new { message = "Invalid credentials." };
-                await logger.LogResponseAsync(Response, error);
                 return Unauthorized(error);
 
             }
             else
             {
-                await logger.LogResponseAsync(Response, token);
                 return Ok(token);
             }                
         }

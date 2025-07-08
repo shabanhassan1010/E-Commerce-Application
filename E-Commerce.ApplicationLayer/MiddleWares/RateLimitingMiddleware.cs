@@ -1,10 +1,8 @@
-﻿
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace E_Commerce.ApplicationLayer.MiddleWares
 {
-    public class RateLimitingMiddleware
+    public class RateLimitingMiddleware   //  to check if the request try to access any endpoint more than 5 in 10 seconds
     {
         /// <summary>
         /// Middlewares ----> is work or use Scoped dependency Injection
@@ -18,7 +16,7 @@ namespace E_Commerce.ApplicationLayer.MiddleWares
             _next = next;
         }
 
-        public async Task invoke (HttpContext context)
+        public async Task InvokeAsync(HttpContext context)
         {
             _counter ++;
             if(DateTime.Now.Subtract(_LastrequestDate).Seconds > 10)

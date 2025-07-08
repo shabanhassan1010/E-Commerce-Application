@@ -18,7 +18,7 @@ namespace E_Commerce.ApplicationLayer.MiddleWares
         }
 
         /// <summary>
-        ///  HttpContext : contain  all info about req and response
+        ///  HttpContext : Contains  all info about req and response
         ///  Task : is peocess which is work in somewhere in (Processor) not (Main Thread)
         /// </summary>
         /// <param name="context"></param>
@@ -29,7 +29,6 @@ namespace E_Commerce.ApplicationLayer.MiddleWares
             await _next(context);   // im wait context beacause he contain all info about req and response
             stopWatch.Stop();
             _logger.LogInformation($"request`{context.Request.Path} took {stopWatch.ElapsedMilliseconds}Ms`");
-            await _next(context);
         }
     }
 }

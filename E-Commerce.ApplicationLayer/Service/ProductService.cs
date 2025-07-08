@@ -1,13 +1,14 @@
 ﻿#region
 using AutoMapper;
 using Azure;
-using E_Commerce.ApplicationLayer.Dtos.Product;
 using E_Commerce.ApplicationLayer.Dtos.Product.Read;
 using E_Commerce.ApplicationLayer.Dtos.Product.Update;
+using E_Commerce.ApplicationLayer.Dtos.Product.Write;
 using E_Commerce.ApplicationLayer.IService;
 using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer;
+using Serilog;
 #endregion
 
 namespace E_Commerce.ApplicationLayer.Service
@@ -28,6 +29,7 @@ namespace E_Commerce.ApplicationLayer.Service
         {
             var products = await unitOfWork.productRepository.GetAllAsync();
             var mapper = _mapper.Map<IEnumerable<GetProductDto>>(products);
+            Log.Information("GetAllProductAsync");
             return mapper;
         }
         public async Task<PaginationResponse<GetProductDto>> GetAllPaginatedAsync(int page = 1, int pageSize = 10)
@@ -49,6 +51,9 @@ namespace E_Commerce.ApplicationLayer.Service
             if (Product == null)
                 return null;
             var mapping = _mapper.Map<GetProductDto>(Product);
+
+            Log.Information($"GetByIdAsync{Id}");
+
             return mapping;
         }
         public async Task<IEnumerable<GetProductDto>> GetProductsByBrandAsync(string brand)

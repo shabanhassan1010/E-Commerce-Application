@@ -1,9 +1,9 @@
 ﻿#region
 using AutoMapper;
 using E_Commerce.ApplicationLayer.Dtos.Orders;
-using E_Commerce.ApplicationLayer.Dtos.Product;
 using E_Commerce.ApplicationLayer.Dtos.Product.Read;
 using E_Commerce.ApplicationLayer.Dtos.Product.Update;
+using E_Commerce.ApplicationLayer.Dtos.Product.Write;
 using E_Commerce.ApplicationLayer.Dtos.ProductCart;
 using E_Commerce.DomainLayer.Entities;
 #endregion

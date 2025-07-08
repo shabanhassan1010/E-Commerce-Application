@@ -12,6 +12,5 @@ namespace E_Commerce.DomainLayer.Interfaces
         Task<PaginationResponse<Product>> GetProductsPagedAsync(int pageIndex, int pageSize);
         Task<IReadOnlyList<Product>> SearchProductsAsync(string? searchTerm);
         Task<PaginationResponse<Product>> FuzzySearchAsync(string query ,int page, int pageSize);
-
     }
 }

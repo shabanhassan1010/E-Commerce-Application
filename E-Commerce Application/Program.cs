@@ -1,5 +1,4 @@
 #region
-using E_Commerce.ApplicationLayer.ILogger;
 using E_Commerce.ApplicationLayer.IService;
 using E_Commerce.ApplicationLayer.Mapper;
 using E_Commerce.ApplicationLayer.MiddleWares;
@@ -9,7 +8,6 @@ using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer.Data.DBContext;
 using E_Commerce.InfrastructureLayer.Data.InterfacesImplementaion;
-using E_Commerce.InfrastructureLayer.Logger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -117,10 +115,10 @@ namespace E_Commerce_Application
 
             var app = builder.Build();
 
-            // Exception handling should be first in the pipeline
             #region Custome middlware
-            //app.UseMiddleware<ExceptionMiddleware>();
-            //app.UseMiddleware<RequestResponseLoggingMiddleware>();
+            app.UseMiddleware<ExceptionMiddleware>();
+            app.UseMiddleware<RateLimitingMiddleware>();
+            app.UseMiddleware<ProfindingMiddleware>();
             #endregion
 
             #region Middleware Pipeline Configuration

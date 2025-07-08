@@ -1,6 +1,6 @@
-﻿using E_Commerce.ApplicationLayer.Dtos.Product;
-using E_Commerce.ApplicationLayer.Dtos.Product.Read;
+﻿using E_Commerce.ApplicationLayer.Dtos.Product.Read;
 using E_Commerce.ApplicationLayer.Dtos.Product.Update;
+using E_Commerce.ApplicationLayer.Dtos.Product.Write;
 using E_Commerce.InfrastructureLayer;
 using Microsoft.AspNetCore.Mvc;
 

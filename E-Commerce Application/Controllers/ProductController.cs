@@ -1,30 +1,28 @@
-﻿#region MyRegion
-using E_Commerce.ApplicationLayer.Dtos.Product;
-using E_Commerce.ApplicationLayer.Dtos.Product.Read;
+﻿using E_Commerce.ApplicationLayer.Dtos.Product.Read;
 using E_Commerce.ApplicationLayer.Dtos.Product.Update;
-using E_Commerce.ApplicationLayer.ILogger;
+using E_Commerce.ApplicationLayer.Dtos.Product.Write;
 using E_Commerce.ApplicationLayer.IService;
 using E_Commerce.DomainLayer.Entities;
-using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 using System.Security.Claims;
-#endregion
 
 namespace E_Commerce_Application.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    //[Authorize(Policy = "AdminPolicy")]
+    [ApiController]
     public class ProductController : ControllerBase
     {
         #region DBContext
         private readonly IProductService _productService;
-        public ProductController( IProductService productService )
+        private readonly ILogger<ProductController> logger;
+
+        public ProductController(IProductService productService, ILogger<ProductController> logger)
         {
             _productService = productService;
+            this.logger = logger;
         }
         #endregion
 
@@ -55,14 +53,18 @@ namespace E_Commerce_Application.Controllers
         [HttpGet("GetAllPaginated")]
         //[Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Get All Product Paginated")]
-        public async Task<ActionResult<PaginationResponse<Product>>> GetAllPaginated([FromQuery] int page = 1,[FromQuery] int pageSize = 10)
+        public async Task<ActionResult<PaginationResponse<Product>>> GetAllPaginated([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             if (page < 1 || pageSize < 1)
                 return BadRequest("Page and pageSize must be greater than 0");
-
+            logger.LogInformation("Trying to get All products");
             var response = await _productService.GetAllPaginatedAsync(page, pageSize);
+
             if (response == null)
+            {
+                logger.LogWarning("Something was happened when you get All products ");
                 return NotFound("No products found");
+            }
 
             return Ok(response);
         }
@@ -74,9 +76,13 @@ namespace E_Commerce_Application.Controllers
         [EndpointSummary("Get Product by ID")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
+            logger.LogInformation("Trying to get product with ID: {Id}", id);
             var product = await _productService.GetProductAsync(id);
             if (product == null)
+            {
+                logger.LogWarning("Product with ID: {Id} not found", id);
                 return NotFound($"Product with ID {id} not found");
+            }
 
             return Ok(product);
         }
@@ -86,33 +92,40 @@ namespace E_Commerce_Application.Controllers
         [HttpGet("FilterProductByBrandOrTypeOrPrice")]
         [Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Filter Product By Brand Or Type Or Price")]
-        public async Task<ActionResult<IReadOnlyList<GetProductDto>>> FilterProductByBrandOrTypeOrPrice([FromQuery] string? brand, 
-                             [FromQuery] string? type,  [FromQuery] string? sort)
+        public async Task<ActionResult<IReadOnlyList<GetProductDto>>> FilterProductByBrandOrTypeOrPrice([FromQuery] string? brand,
+                             [FromQuery] string? type, [FromQuery] string? sort)
         {
             var userId = GetById();
             if (string.IsNullOrEmpty(userId))
+            {
+                logger.LogWarning("Unauthorized access attempt to FilterProductByBrandOrTypeOrPrice.");
                 return Unauthorized();
+            }
+            logger.LogInformation("User {UserId} is filtering products. Brand: {Brand}, Type: {Type}, Sort: {Sort}", userId, brand, type, sort);
 
             var products = await _productService.FilterProductBasedAsync(brand, type, sort);
             if (products == null || !products.Any())
+            {
+                logger.LogWarning("No products found for User {UserId} with Brand: {Brand}, Type: {Type}, Sort: {Sort}", userId, brand, type, sort);
                 return NotFound("No products found matching the criteria");
+            }
 
             return Ok(products);
         }
         #endregion
-      
+
         #region CreateProduct
         [HttpPost("CreateProduct")]
         [Authorize(Policy = "AdminPolicy")]
         [EndpointSummary("Create New Product")]
-        public async Task<ActionResult<GetProductDto>> CreateProduct( CreateProductDto createProductDto)
+        public async Task<ActionResult<GetProductDto>> CreateProduct(CreateProductDto createProductDto)
         {
             var userId = GetById();
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var createdProduct  = await _productService.CreateProduct(createProductDto);
-            
+            var createdProduct = await _productService.CreateProduct(createProductDto);
+
             if (createdProduct == null)
                 return BadRequest("Failed to create product");
 
@@ -131,7 +144,7 @@ namespace E_Commerce_Application.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var product = await _productService.UpdateProduct(updateProductDto , id);
+            var product = await _productService.UpdateProduct(updateProductDto, id);
             if (product == null)
                 return NotFound("This Product Not Found");
 
@@ -216,14 +229,18 @@ namespace E_Commerce_Application.Controllers
         #region Fuzzy Search 
 
         [HttpGet("FuzzySearch")]
-        //[Authorize(Policy = "CustomerPolicy")]
+        [Authorize(Policy = "CustomerPolicy")]
         [EndpointSummary("Fuzzy search by product name with pagination")]
-        public async Task<IActionResult> FuzzySearch([FromQuery] string query , [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> FuzzySearch([FromQuery] string query, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
+            var user = GetById();
+            if (string.IsNullOrEmpty(user))
+                return Unauthorized();
+
             if (string.IsNullOrWhiteSpace(query))
                 return BadRequest("Search query cannot be empty");
 
-            var products = await _productService.FuzzySearchProductsAsync(query , page , pageSize);
+            var products = await _productService.FuzzySearchProductsAsync(query, page, pageSize);
 
             if (!products.Data.Any())
                 return NotFound("No matching products found");

@@ -1,10 +1,9 @@
-﻿using Azure;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace E_Commerce.ApplicationLayer.MiddleWares
 {
-    public class RequestResponseLoggingMiddleware : IMiddleware
+    public class RequestResponseLoggingMiddleware : IMiddleware   // check response and request
     {
         #region Constructor
         private readonly ILogger<RequestResponseLoggingMiddleware> logger;
