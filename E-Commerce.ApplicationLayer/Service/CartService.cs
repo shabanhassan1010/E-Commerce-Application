@@ -3,6 +3,8 @@ using E_Commerce.ApplicationLayer.Dtos.ProductCart;
 using E_Commerce.ApplicationLayer.IService;
 using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
+using Microsoft.Extensions.Logging;
+using Serilog;
 
 
 namespace E_Commerce.ApplicationLayer.Service
@@ -28,7 +30,7 @@ namespace E_Commerce.ApplicationLayer.Service
                 cart = await CreateNewCart(userId);
                 await _unitOfWork.SaveAsync();
             }
-
+            Log.Information($"GetCartAsync {cart.Id}");
             return _mapper.Map<CartResponseDto>(cart);
         }
         public async Task<CartItemDto> AddItemToCartAsync(string userId, AddToCartDto dto)

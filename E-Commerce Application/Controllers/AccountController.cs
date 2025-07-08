@@ -1,6 +1,7 @@
 ﻿using E_Commerce.ApplicationLayer.Dtos.Account.ForgetPassword;
 using E_Commerce.ApplicationLayer.Dtos.Account.Login;
 using E_Commerce.ApplicationLayer.Dtos.Account.Rigster;
+using E_Commerce.ApplicationLayer.ILogger;
 using E_Commerce.ApplicationLayer.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +16,17 @@ namespace E_Commerce_Application.Controllers
         /// [1]  this service will help me to hash password and compare hashpassword with other and save it in database   
         /// </summary>
         /// 
+
         #region configuration
         private readonly IConfiguration _configuration;
         private readonly IUserService userService;
-        public AccountController(IConfiguration configuration , IUserService userService)
+        private readonly IRequestResponseLogger logger;
+
+        public AccountController(IConfiguration configuration , IUserService userService , IRequestResponseLogger logger)
         {
             _configuration = configuration;
             this.userService = userService;
+            this.logger = logger;
         }
         #endregion
 
@@ -30,15 +35,24 @@ namespace E_Commerce_Application.Controllers
         [EndpointSummary("Register")]
         public async Task<ActionResult> Register([FromBody] RegisterDto registerDto)
         {
+            await logger.LogRequestAsync(Request);
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var result = await userService.RegisterAsync(registerDto);
 
             if (result.Succeeded)
-                return Ok(new { message = "Admin registered successfully." });
-
-            return BadRequest(result.Errors);
+            {
+                var response = new { message = "registered successfully." };
+                await logger.LogResponseAsync(Response, response);
+                return Ok(response);
+            }
+            else
+            {
+                await logger.LogResponseAsync(Response, result.Errors);
+                return BadRequest(result.Errors);
+            }
         }
         #endregion
 
@@ -47,15 +61,25 @@ namespace E_Commerce_Application.Controllers
         [EndpointSummary("Login")]
         public async Task<ActionResult<TokenDto>> Login([FromBody] LoginDto loginDto)
         {
+            await logger.LogRequestAsync(Request);
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var token = await userService.LoginAsync(loginDto);
 
             if (token == null)
-                return Unauthorized(new { message = "Invalid credentials." });
+            {
+                var error = new { message = "Invalid credentials." };
+                await logger.LogResponseAsync(Response, error);
+                return Unauthorized(error);
 
-            return Ok(token);
+            }
+            else
+            {
+                await logger.LogResponseAsync(Response, token);
+                return Ok(token);
+            }                
         }
         #endregion
 

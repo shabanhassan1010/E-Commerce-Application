@@ -1,4 +1,5 @@
 #region
+using E_Commerce.ApplicationLayer.ILogger;
 using E_Commerce.ApplicationLayer.IService;
 using E_Commerce.ApplicationLayer.Mapper;
 using E_Commerce.ApplicationLayer.MiddleWares;
@@ -8,10 +9,12 @@ using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer.Data.DBContext;
 using E_Commerce.InfrastructureLayer.Data.InterfacesImplementaion;
+using E_Commerce.InfrastructureLayer.Logger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Security.Claims;
 using System.Text;
 #endregion
@@ -87,7 +90,11 @@ namespace E_Commerce_Application
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddAutoMapper(typeof(CartMappingProfile));
+            //builder.Services.AddSingleton<RequestResponseLoggingMiddleware>();
+            //builder.Services.AddScoped<IRequestResponseLogger, RequestResponseLogger>();
+
             #endregion
 
             #region Action Filters Registration
@@ -102,11 +109,21 @@ namespace E_Commerce_Application
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
 
+            #region Serilog
+            Log.Logger = new LoggerConfiguration().ReadFrom
+                .Configuration(builder.Configuration).CreateLogger();
+            builder.Services.AddSerilog();
+            #endregion
+
             var app = builder.Build();
 
-            #region Middleware Pipeline Configuration
             // Exception handling should be first in the pipeline
+            #region Custome middlware
             //app.UseMiddleware<ExceptionMiddleware>();
+            //app.UseMiddleware<RequestResponseLoggingMiddleware>();
+            #endregion
+
+            #region Middleware Pipeline Configuration
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
@@ -115,7 +132,7 @@ namespace E_Commerce_Application
 
             app.UseHttpsRedirection();
 
-            //app.UseRouting();
+            app.UseRouting();
 
             app.UseAuthentication();
 

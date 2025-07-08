@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
 
-namespace E_Commerce.ApplicationLayer.Dtos.Product
+namespace E_Commerce.ApplicationLayer.Dtos.Product.Update
 {
-    public class CreateProductDto
+    public class UpdateProductDto
     {
         [Required(ErrorMessage = "Product name is required")]
         [StringLength(100, MinimumLength = 3, ErrorMessage = "Product name must be between 3 and 100 characters")]
@@ -16,9 +17,9 @@ namespace E_Commerce.ApplicationLayer.Dtos.Product
         [Range(0.01, 1000000, ErrorMessage = "Price must be greater than 0 and less than 1,000,000")]
         public decimal Price { get; set; }
 
-        [Required(ErrorMessage = "Product image URL is required")]
-        [Url(ErrorMessage = "Invalid URL format")]
-        [StringLength(500, ErrorMessage = "URL cannot exceed 500 characters")]
+        //[Required(ErrorMessage = "Product image URL is required")]
+        //[Url(ErrorMessage = "Invalid URL format")]
+        //[StringLength(500, ErrorMessage = "URL cannot exceed 500 characters")]
         public string PictureUrl { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Product type is required")]

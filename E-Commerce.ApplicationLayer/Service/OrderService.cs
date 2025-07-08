@@ -24,6 +24,7 @@ namespace E_Commerce.ApplicationLayer.Service
         {
             // Check if Cart have any order ot not
             var cart = await unitOfWork.shoppingCartRepository.GetByUserIdAsync(userId);
+
             if (cart == null || !cart.CartItems.Any() || cart.CartItems == null)
                 return Result<OrderDto>.Failure("Cart is empty or not found.");
 

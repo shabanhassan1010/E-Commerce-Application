@@ -9,7 +9,6 @@ namespace E_Commerce.InfrastructureLayer
         public int TotalItems { get; set; }
         public int TotalPages { get; set; }
         public IEnumerable<T> Data { get; set; }
-
         public PaginationResponse(int pageIndex, int pageSize, int totalItems, IEnumerable<T> data)
         {
             PageIndex = pageIndex;

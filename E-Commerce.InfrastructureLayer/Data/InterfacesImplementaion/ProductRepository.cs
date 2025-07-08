@@ -3,6 +3,7 @@ using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
 using E_Commerce.InfrastructureLayer.Data.DBContext;
 using E_Commerce.InfrastructureLayer.Data.DBContext.Repositories;
+using FuzzySharp;
 using Microsoft.EntityFrameworkCore;
 #endregion
 
@@ -10,21 +11,23 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
 {
     public class ProductRepository : GenericRepository<Product> , IProductRepository
     {
+        #region context
         private readonly ApplicationDBContext context;
         public ProductRepository(ApplicationDBContext context) : base(context)
         {
             this.context = context;
         }
-
-        public async Task<IReadOnlyList<string>> GetBrandsAsync()
+        #endregion
+        public async Task<IReadOnlyList<Product>> GetBrandsAsync(string brand)
         {
-            return await context.products.AsNoTracking().Select(B => B.Brand)
-                    .Distinct().ToListAsync();
+            return await context.products.AsNoTracking()
+                .Where(p => p.Brand.ToLower() == brand.ToLower()).ToListAsync();
         }
-        public async Task<IReadOnlyList<string>> GetTypesAsync()
+        public async Task<IReadOnlyList<Product>> GetTypesAsync(string type)
         {
-            return await context.products.AsNoTracking().Select(t => t.Type)
-                .Distinct().ToListAsync();
+            return await context.products.AsNoTracking()
+                .Where(p => p.Type.ToLower() == type.ToLower()).ToListAsync();
+
         }
         public async Task<PaginationResponse<Product>> GetProductsPagedAsync(int pageIndex, int pageSize)
         {
@@ -42,18 +45,18 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
 
             return new PaginationResponse<Product>(pageIndex, pageSize, totalItems, data);
         }
-        public async Task<IReadOnlyList<Product>> FilterProductByBrand(string? brand, string? type , string? sort)
+        public async Task<IReadOnlyList<Product>> FilterProductsAsync(string? brand, string? type , string? sort)
         {
             var query = context.products.AsNoTracking();
             if (!string.IsNullOrWhiteSpace(brand))
-                query = query.Where(b => b.Brand == brand);
+                query = query.Where(b => b.Brand.ToLower() == brand.ToLower());
 
             if (!string.IsNullOrWhiteSpace(type))
-                query = query.Where(T => T.Type == type);
+                query = query.Where(T => T.Type.ToLower() == type.ToLower());
 
             query = sort switch
             {
-                "PriceAse" => query.OrderBy(x => x.Price),
+                "PriceAsc" => query.OrderBy(x => x.Price),
                 "PriceDesc" => query.OrderByDescending(x => x.Price),
                 _ => query.OrderBy(x => x.Name)
             };
@@ -71,6 +74,21 @@ namespace E_Commerce.InfrastructureLayer.Data.GenericClass
                     p.Description.ToLower().StartsWith(searchTerm) || 
                     p.Brand.ToLower().StartsWith(searchTerm) ||      
                     p.Type.ToLower().StartsWith(searchTerm)).OrderBy(p => p.Name).ToListAsync();
+        }
+        public async Task<PaginationResponse<Product>> FuzzySearchAsync(string query , int page, int pageSize)
+        {
+            var products = await context.products.ToListAsync();
+
+            // Apply fuzzy filter on name only
+            var fuzzyMatched = products.Where(p=>Fuzz.PartialRatio(p.Name?.ToLower() ?? "", query.ToLower()) > 70).ToList();
+            var totalItems = fuzzyMatched.Count;
+
+            var pagedData = fuzzyMatched
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new PaginationResponse<Product>(page, pageSize, totalItems, pagedData);
         }
     }
 }
