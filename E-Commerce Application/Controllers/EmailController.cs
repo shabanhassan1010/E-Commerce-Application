@@ -11,6 +11,7 @@ namespace E_Commerce_Application.Controllers
     [ApiController]
     public class EmailController : ControllerBase
     {
+        #region Context
         private readonly IEmailService _emailService;
         private readonly IConfiguration config;
 
@@ -19,7 +20,9 @@ namespace E_Commerce_Application.Controllers
             _emailService = emailService;
             this.config = config;
         }
+        #endregion
 
+        #region SendEmail
         [HttpPost("SendEmail")]
         [EndpointSummary("Send Email")]
         public async Task<IActionResult> SendEmail(EmailRequestDto request)
@@ -32,9 +35,11 @@ namespace E_Commerce_Application.Controllers
             if (email == null)
                 return BadRequest("something Happened please check the error");
             else
-            return Ok("Message sent to Your Emali Successfully");
+                return Ok("Message sent to Your Emali Successfully");
         }
+        #endregion
 
+        #region ConfirmEmail
         [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
@@ -45,9 +50,10 @@ namespace E_Commerce_Application.Controllers
             if (result != "Success")
                 return BadRequest(result);
 
-            // ✅ Redirect to frontend login page from configuration
+            // Redirect to frontend login page from configuration
             var loginUrl = config["EmailSettings:LoginUrl"] ?? "https://yourfrontend.com/login";
             return Redirect(loginUrl);
         }
+        #endregion
     }
 }

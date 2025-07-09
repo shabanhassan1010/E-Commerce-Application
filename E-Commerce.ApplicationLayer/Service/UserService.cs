@@ -4,6 +4,7 @@ using E_Commerce.ApplicationLayer.Dtos.Account.ForgetPassword;
 using E_Commerce.ApplicationLayer.Dtos.Account.Login;
 using E_Commerce.ApplicationLayer.Dtos.Account.LogOut;
 using E_Commerce.ApplicationLayer.Dtos.Account.Rigster;
+using E_Commerce.ApplicationLayer.Dtos.Email;
 using E_Commerce.ApplicationLayer.IService;
 using E_Commerce.DomainLayer.Entities;
 using E_Commerce.DomainLayer.Interfaces;
@@ -89,7 +90,7 @@ namespace E_Commerce.ApplicationLayer.Service
             // Generate Email
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encoded = HttpUtility.UrlEncode(token);
-            var confirmationLink = $"https://localhost:7036/api/Email/confirm-email?userId={user.Id}&token={HttpUtility.UrlEncode(token)}";
+            var confirmationLink = $"https://localhost:7036/api/Email/confirm-email?userId={user.Id}&token={HttpUtility.UrlEncode(encoded)}";
             Console.WriteLine("Confirm Link: " + confirmationLink);
             var subject = "تأكيد البريد الإلكتروني";
             var body = $"<p>مرحبًا {user.FirstName}،</p><p>اضغط على الرابط التالي لتأكيد بريدك الإلكتروني:</p><p><a href='{confirmationLink}'>تأكيد الحساب</a></p>";
@@ -134,14 +135,25 @@ namespace E_Commerce.ApplicationLayer.Service
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                return null;
+                return new TokenDto
+                {
+                    Token = string.Empty, Message = "المستخدم غير موجود"
+                };
 
             if (!await _userManager.IsEmailConfirmedAsync(user))
-                throw new Exception("لم يتم تأكيد البريد الإلكتروني بعد.");
+                return new TokenDto
+                {
+                    Token = string.Empty, Message = "البريد غير مؤكد"
+                };
 
             var result = await _signInManager.PasswordSignInAsync(user, dto.Password, false, false);
             if (!result.Succeeded)
-                return null;
+            {
+                return new TokenDto
+                {
+                    Token = string.Empty,  Message = "كلمة المرور غير صحيحة"
+                };
+            }
 
             var claimsList = await _userManager.GetClaimsAsync(user);
 
@@ -167,7 +179,7 @@ namespace E_Commerce.ApplicationLayer.Service
                 expires: DateTime.Now.AddMinutes(10)
             );
 
-            return new TokenDto { Token = new JwtSecurityTokenHandler().WriteToken(token) };
+            return new TokenDto { Token = new JwtSecurityTokenHandler().WriteToken(token) , Message = "تم تسجيل الدخول بنجاح" };
         }
         public async Task<bool> ForgotPasswordAsync(ForgotPasswordDto dto)
         {
@@ -203,6 +215,5 @@ namespace E_Commerce.ApplicationLayer.Service
 
             return mapper.Map<UserDto>(user);
         }
-
     }
 }

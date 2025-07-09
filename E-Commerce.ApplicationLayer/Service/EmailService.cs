@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using System.Runtime;
+using System.Web;
 
 namespace E_Commerce.ApplicationLayer.Service
 {
@@ -61,9 +62,13 @@ namespace E_Commerce.ApplicationLayer.Service
             if (user == null)
                 return "User Not Found";
 
-            var result = await _userManager.ConfirmEmailAsync(user, token);
+            var decodedToken = HttpUtility.UrlDecode(token);
+            var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
             if (!result.Succeeded)
-                return "فشل تأكيد البريد الإلكتروني.";
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return $"فشل التأكيد: {errors}";
+            }
 
             return "Success";
         }
