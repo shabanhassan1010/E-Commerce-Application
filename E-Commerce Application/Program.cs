@@ -32,8 +32,9 @@ namespace E_Commerce_Application
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             #endregion
 
-            builder.Services.Configure<EmailSetting>(builder.Configuration.GetSection("EmailSettings"));
-
+            #region Email Configurtaion
+            builder.Services.Configure<EmailSetting>(builder.Configuration.GetSection("EmailSetting"));
+            #endregion
 
             #region Identity Configuration  -> ( Must be before JWT Authentication)
             builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -95,6 +96,7 @@ namespace E_Commerce_Application
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
+            //builder.Services.AddSingleton<EmailSetting, EmailSetting>();
             builder.Services.AddAutoMapper(typeof(CartMappingProfile));
             //builder.Services.AddSingleton<RequestResponseLoggingMiddleware>();
             //builder.Services.AddScoped<IRequestResponseLogger, RequestResponseLogger>();

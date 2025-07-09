@@ -15,6 +15,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
+using System.Web;
 #endregion
 
 namespace E_Commerce.ApplicationLayer.Service
@@ -29,11 +30,12 @@ namespace E_Commerce.ApplicationLayer.Service
         private readonly IMapper mapper;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserRepository userRepository;
+        private readonly IEmailService _emailService;
 
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager,
             IConfiguration config,IMapper mapper,
             RoleManager<IdentityRole> roleManager , 
-            IUserRepository userRepository)
+            IUserRepository userRepository , IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -41,6 +43,7 @@ namespace E_Commerce.ApplicationLayer.Service
             this.mapper = mapper;
             _roleManager = roleManager;
             this.userRepository = userRepository;
+            _emailService = emailService;
         }
         #endregion
 
@@ -82,6 +85,16 @@ namespace E_Commerce.ApplicationLayer.Service
 
             // Add claims
             var claimResult = await AddUserClaims(user);
+
+            // Generate Email
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encoded = HttpUtility.UrlEncode(token);
+            var confirmationLink = $"https://localhost:7036/api/Email/confirm-email?userId={user.Id}&token={HttpUtility.UrlEncode(token)}";
+            Console.WriteLine("Confirm Link: " + confirmationLink);
+            var subject = "تأكيد البريد الإلكتروني";
+            var body = $"<p>مرحبًا {user.FirstName}،</p><p>اضغط على الرابط التالي لتأكيد بريدك الإلكتروني:</p><p><a href='{confirmationLink}'>تأكيد الحساب</a></p>";
+
+            await _emailService.SendEmailAsync(user.Email, subject, body);
             return claimResult;
         }
         private async Task EnsureRolesExist()
@@ -122,6 +135,9 @@ namespace E_Commerce.ApplicationLayer.Service
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
                 return null;
+
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+                throw new Exception("لم يتم تأكيد البريد الإلكتروني بعد.");
 
             var result = await _signInManager.PasswordSignInAsync(user, dto.Password, false, false);
             if (!result.Succeeded)
