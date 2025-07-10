@@ -23,6 +23,17 @@ namespace E_Commerce.InfrastructureLayer.Data.DBContext
             modelBuilder.ApplyConfiguration(new ShoppingCartConfiguration());
             modelBuilder.ApplyConfiguration(new CartItemsConfiguration());
             modelBuilder.ApplyConfiguration(new ProductConfiguration());
+
+            // Make Tables in Database more redable
+            var schema = "Security";
+
+            modelBuilder.Entity<User>().ToTable("Users", schema);
+            modelBuilder.Entity<IdentityRole>().ToTable("Roles", schema);
+            modelBuilder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", schema);
+            modelBuilder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", schema);
+            modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins", schema);
+            modelBuilder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims", schema);
+            modelBuilder.Entity<IdentityUserToken<string>>().ToTable("UserTokens", schema);
         }
     }
 }
