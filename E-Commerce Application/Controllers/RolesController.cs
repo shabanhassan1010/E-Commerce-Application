@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using StackExchange.Redis;
 
 namespace E_Commerce_Application.Controllers
 {
@@ -11,20 +9,27 @@ namespace E_Commerce_Application.Controllers
     [Authorize(Policy = "AdminPolicy")]
     public class RolesController : ControllerBase
     {
+        #region Context
         private readonly RoleManager<IdentityRole> roleManager;
         public RolesController(RoleManager<IdentityRole> roleManager)
         {
             this.roleManager = roleManager;
         }
+        #endregion
 
+        #region GetRoles
         [HttpGet]
+        [EndpointSummary("Get All Roles")]
         public ActionResult<IEnumerable<string>> GetRoles()
         {
             var roles = roleManager.Roles.Select(x => x.Name).ToList();
             return roles;
         }
+        #endregion
 
+        #region CreateRole
         [HttpPost]
+        [EndpointSummary("Create Role")]
         public async Task<IActionResult> CreateRole(string roleName)
         {
             if (string.IsNullOrWhiteSpace(roleName))
@@ -42,9 +47,11 @@ namespace E_Commerce_Application.Controllers
 
             return BadRequest(result.Errors);
         }
+        #endregion
 
-
+        #region DeleteRole
         [HttpDelete("{roleName}")]
+        [EndpointSummary("Delete Role")]
         public async Task<IActionResult> DeleteRole(string roleName)
         {
             var role = await roleManager.FindByNameAsync(roleName);
@@ -57,5 +64,6 @@ namespace E_Commerce_Application.Controllers
 
             return BadRequest(result.Errors);
         }
+        #endregion
     }
 }

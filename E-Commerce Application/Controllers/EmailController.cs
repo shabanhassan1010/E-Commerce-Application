@@ -41,6 +41,7 @@ namespace E_Commerce_Application.Controllers
 
         #region ConfirmEmail
         [HttpGet("confirm-email")]
+        [EndpointSummary("Confirm Email")]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             Console.WriteLine("UserId: " + userId);

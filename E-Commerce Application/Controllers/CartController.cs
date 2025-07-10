@@ -26,6 +26,7 @@ namespace E_Commerce_Application.Controllers
 
         #region  GetCart
         [HttpGet]
+        [EndpointSummary("Get All Cart")]
         public async Task<ActionResult<CartResponseDto>> GetCart()
         {
             var userId = GetUserId();

@@ -55,10 +55,6 @@ namespace E_Commerce_Application.Controllers
         [EndpointSummary("Login")]
         public async Task<ActionResult<TokenDto>> Login([FromBody] LoginDto loginDto)
         {
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var token = await userService.LoginAsync(loginDto);
 
             if (token == null)
@@ -79,9 +75,6 @@ namespace E_Commerce_Application.Controllers
         [EndpointSummary("Forgot Password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var result = await userService.ForgotPasswordAsync(dto);
             if (!result)
                 return NotFound(new { message = "Email not found." });
@@ -95,9 +88,6 @@ namespace E_Commerce_Application.Controllers
         [EndpointSummary("Reset Password")]
         public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var result = await userService.ResetPasswordAsync(dto);
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
