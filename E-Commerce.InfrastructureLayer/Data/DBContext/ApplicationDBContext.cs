@@ -26,7 +26,6 @@ namespace E_Commerce.InfrastructureLayer.Data.DBContext
 
             // Make Tables in Database more redable
             var schema = "Security";
-
             modelBuilder.Entity<User>().ToTable("Users", schema);
             modelBuilder.Entity<IdentityRole>().ToTable("Roles", schema);
             modelBuilder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", schema);
