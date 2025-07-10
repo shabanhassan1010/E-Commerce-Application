@@ -67,7 +67,7 @@ namespace E_Commerce.ApplicationLayer.Service
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                UserName = dto.Email,
+                UserName = dto.Email.Split('@')[0],
                 PhoneNumber = dto.PhoneNumber
             };
 
@@ -133,7 +133,8 @@ namespace E_Commerce.ApplicationLayer.Service
         }
         public async Task<TokenDto?> LoginAsync(LoginDto dto)
         {
-            var user = await _userManager.FindByEmailAsync(dto.Email);
+            var user = await _userManager.FindByEmailAsync(dto.EmailOrUsername)
+                ?? await _userManager.FindByNameAsync(dto.EmailOrUsername);
             if (user == null)
                 return new TokenDto
                 {
